@@ -34,13 +34,6 @@ export const setNewCartItem = ( data, quantity ) => {
     }
 }
 
-// Sold Cart Items Removal
-// export const removeSoldCartItems = ( cartIds ) => {
-//     return dispatch => dispatch({
-//         type: DELETE_SOLD_CART_ITEMS
-//     })
-// }
-
 // Delete Cart Item
 const deleteCartItem = ( id ) => {
     return {
@@ -52,5 +45,14 @@ export const deleteCartItemAction = ( cartId ) => {
 
     return dispatch => {
         dispatch( deleteCartItem(cartId) )
+    }
+}
+// Delete Cart Items After Sold
+export const deleteSoldCartItemAction = () => {
+
+    return dispatch => {
+        dispatch( {
+            type: DELETE_SOLD_CART_ITEMS_SUCCESS,
+        } )
     }
 }

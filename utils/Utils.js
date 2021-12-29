@@ -69,8 +69,14 @@ function calculateAngle(coordinates) {
     return Math.atan2(dy, dx) * 180 / Math.PI
 }
 function thousandSeparator(givenNum) {
+    if(givenNum >= 1000)
+    {
+        return givenNum.toString().replace(/(?=(\d{3})+(?!\d))/g, ",")
+    }
+    return givenNum
 
-    return givenNum.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")
+    
+    // return givenNum.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")
 }
 
 // function numberWithCommas(givenNum) {

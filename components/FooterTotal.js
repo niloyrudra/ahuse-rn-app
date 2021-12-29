@@ -11,8 +11,7 @@ import utils from '../utils/Utils'
 
 
 
-const FooterTotal = ({subTotal, total, fee, onPress}) => {
-    console.log(utils)
+const FooterTotal = ({subTotal, total, fee, checkout, onPress}) => {
     return (
         <View>
             {/* Shadow */}
@@ -43,53 +42,76 @@ const FooterTotal = ({subTotal, total, fee, onPress}) => {
             >
 
                 {/* SubTotal */}
-                <View
-                    style={{
-                        flexDirection:'row',
-                    
-                    }}
-                >
-                    <Text style={{flex:1,...FONTS.body3}}>
-                        Subtotal
-                    </Text>
-                    <Text style={{...FONTS.h3}}>
-                        {constants.currency} { subTotal ? subTotal?.toFixed(2) : '00.00' }
-                    </Text>
-                </View>
+                {
+                    !checkout ?
+                        <>
 
-                {/* Shipping Fee */}
-                <View
-                    style={{
-                        flexDirection:'row',
-                        marginTop:SIZES.base,
-                        marginBottom:SIZES.padding
-                    }}
-                >
-                    <Text style={{flex:1,color:COLORS.gray,...FONTS.body3}}>
-                        Transactional Fee
-                    </Text>
-                    <Text style={{color:COLORS.gray,...FONTS.h3}}>
-                        {constants.currency} { fee ? fee?.toFixed(2) : '00.00'}
-                    </Text>
-                </View>
+                            <View
+                                style={{
+                                    flexDirection:'row',
+                                
+                                }}
+                            >
+                                <Text style={{flex:1,...FONTS.body3}}>
+                                    Subtotal
+                                </Text>
+                                <Text style={{...FONTS.h3}}>
+                                    {constants.currency} { subTotal ? utils.thousandSeparator( subTotal?.toFixed(2) ) : '00.00' }
+                                </Text>
+                            </View>
 
-                <LineDivider/>
+                            <View
+                                style={{
+                                    flexDirection:'row',
+                                    marginTop:SIZES.base,
+                                    marginBottom:SIZES.padding
+                                }}
+                            >
+                                <Text style={{flex:1,color:COLORS.gray,...FONTS.body3}}>
+                                    Transactional Fee
+                                </Text>
+                                <Text style={{color:COLORS.gray,...FONTS.h3}}>
+                                    {constants.currency} { fee ? fee?.toFixed(2) : '00.00'}
+                                </Text>
+                            </View>
+
+                            <LineDivider/>
+
+                            <View
+                                style={{
+                                    flexDirection:'row',
+                                    marginTop:SIZES.padding,
+                                    // marginBottom:SIZES.padding
+                                }}
+                            >
+                                <Text style={{flex:1,...FONTS.h2}}>
+                                    Total:
+                                </Text>
+                                <Text style={{...FONTS.h2}}>
+                                    {constants.currency} { total ? utils.thousandSeparator( total?.toFixed(2) ) : '00.00'}
+                                </Text>
+                            </View>
+                        </>
+                    :
+                        <View
+                            style={{
+                                flexDirection:'row',
+                                marginTop:SIZES.padding,
+                                // marginBottom:SIZES.padding
+                            }}
+                        >
+                            <Text style={{flex:1,...FONTS.h2}}>
+                                Total:
+                            </Text>
+                            <Text style={{...FONTS.h2}}>
+                                {constants.currency} { total ? utils.thousandSeparator( total?.toFixed(2) ) : '00.00'}
+                            </Text>
+                        </View>
+
+                }
+
 
                 {/* Total */}
-                <View
-                    style={{
-                        flexDirection:'row',
-                        marginTop:SIZES.padding,
-                        // marginBottom:SIZES.padding
-                    }}
-                >
-                    <Text style={{flex:1,...FONTS.h2}}>
-                        Total:
-                    </Text>
-                    <Text style={{...FONTS.h2}}>
-                        {constants.currency} { total ? total?.toFixed(2) : '00.00'}
-                    </Text>
-                </View>
 
                 {/* Button */}
                 <TextButton

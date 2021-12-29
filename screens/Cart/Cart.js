@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, Text, View, Image, ScrollView, TouchableOpacity, Platform, FlatList, findNodeHandle } from 'react-native'
+import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 import { useDrawerProgress } from '@react-navigation/drawer';
 import Animated from 'react-native-reanimated';
 import { SwipeListView } from 'react-native-swipe-list-view';
@@ -8,17 +8,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import { deleteCartItemAction } from '../../store/cart/cartActions';
 
 // Components
-import TopProfileButton from '../../components/TopProfileButton';
+// import TopProfileButton from '../../components/TopProfileButton';
 import Header from '../../components/Header';
 import IconButton from '../../components/IconButton';
-import CartQuantityButton from '../../components/CartQuantityButton';
+// import CartQuantityButton from '../../components/CartQuantityButton';
 import StepperInput from '../../components/StepperInput';
-
-import { FONTS,COLORS,SIZES } from '../../constants/theme';
-import icons from '../../constants/icons';
 import FooterTotal from '../../components/FooterTotal';
 import constants from '../../constants/constants';
 import TextButton from '../../components/TextButton';
+
+import { FONTS,COLORS,SIZES } from '../../constants/theme';
+import icons from '../../constants/icons';
+import utils from '../../utils/Utils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const Cart = ( { navigation, route } ) => {
@@ -28,10 +30,6 @@ const Cart = ( { navigation, route } ) => {
     const [prices, setPrices] = React.useState([])
 
     const selectedCartItems = useSelector( state => state?.cartReducer?.cartItems )
-
-    React.useEffect(() => {
-        console.log("Cart Screen Loaded")
-    },[])
 
     React.useEffect(() => {
         if(cartList.length>0){
@@ -63,7 +61,35 @@ const Cart = ( { navigation, route } ) => {
 
 
     React.useEffect(() => {
-        if(selectedCartItems) setCartList(selectedCartItems)
+        const updateCartList = async (newCartList) => {
+            try{
+                await AsyncStorage.setItem("cartList", JSON.stringify(newCartList))
+            }
+            catch(err) {
+                console.log("Cart Items failed to store at local storage!", err)
+            }
+        }
+        const getCartList = async () => {
+            try{
+               const cartList = await AsyncStorage.getItem("cartList")
+               if( cartList ) setCartList(cartList)
+            }
+            catch(err) {
+                console.log("Fetching Cart Items from local storage failed!", err)
+            }
+        }
+
+        if(selectedCartItems) {
+            setCartList(selectedCartItems)
+            updateCartList(selectedCartItems)
+        }
+        else{
+            getCartList()
+        }
+
+        return () => {
+            setCartList([])
+        }
     }, [selectedCartItems])
     
     // Render Sections
@@ -121,7 +147,8 @@ const Cart = ( { navigation, route } ) => {
                             <Text
                                 style={{color:COLORS.primary,...FONTS.h3}}
                             >
-                                {constants.currency} {item.cartItem.price}
+                                {/* {constants.currency} {item.cartItem.price} */}
+                                {constants.currency} { utils.thousandSeparator(item?.cartItem?.price)}
                             </Text>
 
                         </View>
@@ -169,6 +196,43 @@ const Cart = ( { navigation, route } ) => {
                 // leftOpenValue={75}
                 // rightOpenValue={-75}
             />            
+        )
+    }
+    const renderNoCartList = () => {
+        return (
+            <View
+                style={{
+                    flex:1,
+                    justifyContent:"flex-start",
+                    alignItems:"center",
+                    marginTop:SIZES.padding,
+                    paddingHorizontal:SIZES.padding
+                }}
+            >
+                <Image
+                    source={icons.oops}
+                    resizeMode='contain'
+                    style={{
+                        width:'60%',
+                        height:'60%',
+                        tintColor:COLORS.gray3
+                    }}
+                />
+                <Text style={{color:COLORS.gray3,...FONTS.body3}}>You have no property added to the cart. Want to add one?</Text>
+                
+
+                <TextButton
+                    label="Add a property"
+                    buttonContainerStyle={{
+                        marginTop:SIZES.padding,
+                        height:55,
+                        width:"100%",
+                        borderRadius:SIZES.radius
+                    }}
+                    onPress={() => navigation.goBack()}
+                />
+
+            </View>
         )
     }
 
@@ -219,46 +283,12 @@ const Cart = ( { navigation, route } ) => {
             />
 
             {/* Cart List */}
-            {/* <ScrollView> */}
             { cartList.length > 0 
                 ?
                 renderCartList()
                 :
-                <View
-                    style={{
-                        flex:1,
-                        justifyContent:"flex-start",
-                        alignItems:"center",
-                        marginTop:SIZES.padding,
-                        paddingHorizontal:SIZES.padding
-                    }}
-                >
-                    <Image
-                        source={icons.oops}
-                        resizeMode='contain'
-                        style={{
-                            width:'60%',
-                            height:'60%',
-                            tintColor:COLORS.gray3
-                        }}
-                    />
-                    <Text style={{color:COLORS.gray3,...FONTS.body3}}>You have no property added to the cart. Want to add one?</Text>
-                    
-
-                    <TextButton
-                        label="Add a property"
-                        buttonContainerStyle={{
-                            marginTop:SIZES.padding,
-                            height:55,
-                            width:"100%",
-                            borderRadius:SIZES.radius
-                        }}
-                        onPress={() => navigation.goBack()}
-                    />
-
-                </View>
+                renderNoCartList()
             }
-            {/* </ScrollView> */}
 
             {/* Footer */}
             <FooterTotal
@@ -266,7 +296,6 @@ const Cart = ( { navigation, route } ) => {
                 total={prices.reduce((accumulator, current) => sumOfPrices(accumulator,current)*(1+constants.fees), 0)}
                 fee={constants.fees}
                 onPress={() => {
-
                     navigation.navigate("MyCards")
                 }}
             />

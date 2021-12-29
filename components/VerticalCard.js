@@ -6,6 +6,7 @@ import constants from '../constants/constants';
 import icons from '../constants/icons';
 
 import { COLORS ,FONTS ,SIZES } from '../constants/theme';
+import utils from '../utils/Utils';
 
 const VerticalCard = ( { containerStyle, item, imageStyle, onPress } ) => {
     return (
@@ -88,7 +89,7 @@ const VerticalCard = ( { containerStyle, item, imageStyle, onPress } ) => {
                         marginTop: SIZES.radius,
                         ...FONTS.h2,
                     }}
-                >{constants.currency} {item?.price}</Text>
+                >{constants.currency} { utils.thousandSeparator(item?.price)}</Text>
 
             </View>
             

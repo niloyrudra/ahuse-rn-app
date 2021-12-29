@@ -14,16 +14,20 @@ import FooterTotal from '../../components/FooterTotal';
 import CardItem from '../../components/CardItem';
 
 // Redux
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { deleteSoldCartItemAction } from '../../store/cart/cartActions'
 
 import { FONTS,COLORS,SIZES } from '../../constants/theme';
 import icons from '../../constants/icons';
 
-import constants, { myCards, allCards } from '../../constants/constants';
+import constants, { myCards } from '../../constants/constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Checkout = ({ navigation, route }) => {
-
+    const dispatch = useDispatch()
     const [ selectedCard, setSelectedCard ] = React.useState(null)
+    const [cartList, setCartList] = React.useState([])
+    const [prices, setPrices] = React.useState([])
 
     const selectedCartItems = useSelector( state => state.cartReducer.cartItems )
 
@@ -33,20 +37,6 @@ const Checkout = ({ navigation, route }) => {
             if(selectedCard) setSelectedCard(selectedCard)
         }
     }, [])
-
-    const [cartList, setCartList] = React.useState([])
-    const [qnt, setQnt] = React.useState(1)
-    const [prices, setPrices] = React.useState([])
-
-    React.useEffect(() => {
-        // const arrSet = new Set();
-        const property = route?.params?.item
-        const propertyQnt = route?.params?.qnt
-        if(property) setCartList([...new Set([...cartList, property])])
-        if(propertyQnt) setQnt(propertyQnt)
-        // console.log(cartList.length)
-    // },[route.params.item.id])
-    },[])
 
     React.useEffect(() => {
         if(cartList.length>0){
@@ -75,8 +65,37 @@ const Checkout = ({ navigation, route }) => {
     const animatedStyle = { borderRadius, transform: [{scale}] }
 
     React.useEffect(() => {
-        console.log( 'Checkout Screen', selectedCartItems)
+        if(selectedCartItems) setCartList(selectedCartItems)
     }, [selectedCartItems])
+
+    // React.useEffect(() => {
+    //     (async () => {
+    //         try{
+    //             const cartData = await AsyncStorage.getItem("cartItem")
+    //             if(cartData && cartList.length == 0 ) setCartList(cartData)
+    //             console.log("Checkout Cart List - >>>", cartData)
+    //         }
+    //         catch(err) {
+    //             console.log("Fetching Cart Items from Local Storage failed!", err)
+    //         }
+    //     })()
+    //     return () => {
+    //         setCartList([])
+    //     }
+    // }, [])
+
+    React.useEffect(() => {
+        if(cartList.length>0){
+            cartList.forEach( (item,index) => {
+                const price = item.cartItem.price ? item.cartItem.price*item.quantity : 0
+                setPrices( [...new Set([...prices, price])] )
+            } )
+        }
+        else{
+            setPrices([])
+        }
+        return () => setPrices([])
+    }, [cartList.length])
 
     // Render Sections
     const renderCards = () => {
@@ -246,10 +265,14 @@ const Checkout = ({ navigation, route }) => {
 
             {/* Footer */}
             <FooterTotal
-                subTotal={prices.reduce((accumulator, current) => sumOfPrices(accumulator,current), 0)}
-                total={prices.reduce((accumulator, current) => sumOfPrices(accumulator,current)*1.12, 0)}
-                fee={12/100}
-                onPress={() => navigation.navigate("Success")}
+                total={prices ? prices?.reduce((accumulator, current) => sumOfPrices(accumulator,current)*(1+constants.fees), 0) : 0 }
+                checkout={true}
+                onPress={() => {
+                    dispatch( deleteSoldCartItemAction() )
+                    setCartList([])
+                    setPrices('')
+                    navigation.navigate("Success")
+                }}
             />
 
         </Animated.View>

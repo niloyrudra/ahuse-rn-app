@@ -14,45 +14,16 @@ import {COLORS,FONTS,SIZES} from '../../constants/theme'
 
 import TextButton from '../../components/TabButton'
 
-// import { connect } from 'react-redux';
 import { useDispatch, useSelector } from 'react-redux';
 import { getTempToken } from '../../store/user/userActions';
 
-// import useAxios from 'axios-hooks';
-
-// const OnBoarding = ({navigation, route, selectedTempToken, setSelectedTempToken}) => {
 const OnBoarding = ({navigation, route, }) => {
 
     const dispatch = useDispatch()
     React.useEffect(() => {
         dispatch( getTempToken() ) 
     }, [])
-    // AXIOS CALLING
-    // const [{ data, loading, error, response }, refetch] = useAxios(
-    //     `${constants.ROOT_URL}/jwt-auth/v1/token`,
-    //     {
-    //         manual: false, // if TRUE, it will not execute immediately
-    //         useCache: false,
-    //         autoCancel: true
-    //     }
-    // );
-
-    // React.useEffect(() => {
-    //     console.log(response)
-    //     // return () => setAllCats([])
-    // },[response]);
-    // React.useEffect(() => {
-    //     if( !error && data) {
-    //         console.log(data)
-    //         // setSelectedTempToken(data)
-    //     }
-    //     // return () => setAllCats([])
-    // },[data]);
-
-    // React.useEffect(() => {
-    //     console.log(selectedTempToken)
-    // },[selectedTempToken]);
-
+   
     const scrollX = React.useRef( new Animated.Value(0) ).current
     const flatListRef = React.useRef()
 
@@ -271,6 +242,14 @@ const OnBoarding = ({navigation, route, }) => {
                 data={constants.onboarding_screens}
                 scrollEventThrottle={16}
                 showsHorizontalScrollIndicator={false}
+                
+                onScrollToIndexFailed={info => {
+                    const wait = new Promise(resolve => setTimeout(resolve, 700));
+                    wait.then(() => {
+                       flatListRef.current?.scrollToIndex({ index: info.index, animated: false });
+                    });
+                }}
+                
                 onScroll={Animated.event(
                     [
                         {

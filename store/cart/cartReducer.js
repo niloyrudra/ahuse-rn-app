@@ -42,10 +42,11 @@ const cartReducer = ( state = initialState, action ) => {
                 isLoading: true,
             }
         case DELETE_FROM_CART_SUCCESS :
+            console.log(action.payload)
             return {
                 ...state,
                 isLoading: false,
-                cartItems: [...state.cartItems.filter( item => item.cartId !== action.payload.id )]
+                cartItems: [...state.cartItems.filter( item => item.cartId !== action.payload )]
             }
         case DELETE_FROM_CART_FAIL :
             return {

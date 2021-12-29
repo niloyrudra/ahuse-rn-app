@@ -6,6 +6,7 @@ import constants from '../constants/constants';
 import icons from '../constants/icons';
 
 import { COLORS ,FONTS ,SIZES } from '../constants/theme';
+import utils from '../utils/Utils';
 
 const HorizontalCard = ( { containerStyle, item, imageStyle, onPress } ) => {
     // console.log(imageStyle)
@@ -55,7 +56,7 @@ const HorizontalCard = ( { containerStyle, item, imageStyle, onPress } ) => {
                         marginTop: SIZES.base,
                         ...FONTS.h2,
                     }}
-                >{'\u00A3'} {item?.price}</Text>
+                >{constants.currency} { utils.thousandSeparator(item?.price)}</Text>
 
             </View>
 

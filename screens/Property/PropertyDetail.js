@@ -574,7 +574,7 @@ const PropertyDetail = ({navigation, route}) => {
                         iconStyle={{}}
                         quantity={quantity}
                         icons={icons.cart}
-                        onPress={() => navigation.navigate("Cart", {item:property, qnt: quantity})}
+                        onPress={() => navigation.navigate("Cart")}
                     />
                 }
             />

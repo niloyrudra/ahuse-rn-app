@@ -44,8 +44,9 @@ import constants from '../constants/constants';
 import icons from '../constants/icons';
 import images from '../constants/images';
 import { COLORS ,FONTS ,SIZES } from '../constants/theme';
-import TopProfileButton from '../components/TopProfileButton';
+// import TopProfileButton from '../components/TopProfileButton';
 import Profile from './User/Profile';
+import CartQuantityButton from '../components/CartQuantityButton';
 
 const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties, setSelectedTab, setAllProperties, setAllCats, setPopularList, setRecommendedList } ) => {
 
@@ -375,7 +376,15 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
                     </TouchableOpacity>
                 }
                 rightComponent={
-                    <TopProfileButton navigation={navigation} />
+                    // <TopProfileButton navigation={navigation} />
+                    <CartQuantityButton
+                        // navigation={navigation}
+                        // containerStyle={{}}
+                        // iconStyle={{}}
+                        // quantity={quantity}
+                        icons={icons.cart}
+                        onPress={() => navigation.navigate("Cart")}
+                    />
                 }
             />
 
@@ -518,7 +527,7 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
                         isLoggedIn &&
                             <TabButton
                                 label={constants.screens.profile}
-                                icon={icons.user}
+                                icon={icons.userSetting}
                                 isFocused={selectedTab == constants.screens.profile}
                                 outerContainerStyles={profileFlexStyle}
                                 innerContainerStyles={profileColorStyle}

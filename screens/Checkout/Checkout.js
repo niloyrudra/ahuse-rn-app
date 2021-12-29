@@ -19,8 +19,7 @@ import { useSelector } from 'react-redux';
 import { FONTS,COLORS,SIZES } from '../../constants/theme';
 import icons from '../../constants/icons';
 
-import constants from '../../constants/constants';
-import { myCards } from '../../constants/dummyData';
+import constants, { myCards, allCards } from '../../constants/constants';
 
 const Checkout = ({ navigation, route }) => {
 

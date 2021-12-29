@@ -68,6 +68,14 @@ function calculateAngle(coordinates) {
 
     return Math.atan2(dy, dx) * 180 / Math.PI
 }
+function thousandSeparator(givenNum) {
+
+    return givenNum.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")
+}
+
+// function numberWithCommas(givenNum) {
+//     return givenNum.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+// }
 
 const utils = {
     validateUsername,
@@ -75,7 +83,8 @@ const utils = {
     validateEmail,
     validatePassword,
     validateInput,
-    calculateAngle
+    calculateAngle,
+    thousandSeparator,
 };
 
 export default utils;

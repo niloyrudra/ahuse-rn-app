@@ -11,7 +11,7 @@ import CardItem from '../../components/CardItem';
 import { FONTS,COLORS,SIZES } from '../../constants/theme';
 import icons from '../../constants/icons';
 
-import { myCards, allCards } from '../../constants/dummyData';
+import { myCards, allCards } from '../../constants/constants';
 import TextButton from '../../components/TextButton';
 
 const MyCards = ({ navigation, route }) => {

@@ -7,10 +7,12 @@ import LineDivider from './LineDivider'
 
 import { COLORS,SIZES,FONTS } from '../constants/theme'
 import constants from '../constants/constants'
-// import { setStatusBarNetworkActivityIndicatorVisible } from 'expo-status-bar'
+import utils from '../utils/Utils'
+
+
 
 const FooterTotal = ({subTotal, total, fee, onPress}) => {
-    console.log(subTotal)
+    console.log(utils)
     return (
         <View>
             {/* Shadow */}
@@ -51,7 +53,7 @@ const FooterTotal = ({subTotal, total, fee, onPress}) => {
                         Subtotal
                     </Text>
                     <Text style={{...FONTS.h3}}>
-                        {constants.currency}{ subTotal ? subTotal?.toFixed(2) : '00.00' }
+                        {constants.currency} { subTotal ? subTotal?.toFixed(2) : '00.00' }
                     </Text>
                 </View>
 
@@ -63,11 +65,11 @@ const FooterTotal = ({subTotal, total, fee, onPress}) => {
                         marginBottom:SIZES.padding
                     }}
                 >
-                    <Text style={{flex:1,...FONTS.body3}}>
-                        Shipping Fee
+                    <Text style={{flex:1,color:COLORS.gray,...FONTS.body3}}>
+                        Transactional Fee
                     </Text>
-                    <Text style={{...FONTS.h3}}>
-                        {constants.currency}{ fee ? fee?.toFixed(2) : '00.00'}
+                    <Text style={{color:COLORS.gray,...FONTS.h3}}>
+                        {constants.currency} { fee ? fee?.toFixed(2) : '00.00'}
                     </Text>
                 </View>
 
@@ -85,7 +87,7 @@ const FooterTotal = ({subTotal, total, fee, onPress}) => {
                         Total:
                     </Text>
                     <Text style={{...FONTS.h2}}>
-                        {constants.currency}{ total ? total?.toFixed(2) : '00.00'}
+                        {constants.currency} { total ? total?.toFixed(2) : '00.00'}
                     </Text>
                 </View>
 

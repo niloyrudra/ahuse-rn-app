@@ -19,7 +19,7 @@ import { getAllCats, getAllTypes, getRecommendedProp, getPopularProp, getAllTaxD
 import constants from '../../constants/constants';
 import icons from '../../constants/icons';
 import { COLORS ,FONTS ,SIZES } from '../../constants/theme';
-import {myProfile} from '../../constants/dummyData'
+import {myProfile} from '../../constants/constants'
 
 // Redux
 import { useDispatch, useSelector } from 'react-redux';

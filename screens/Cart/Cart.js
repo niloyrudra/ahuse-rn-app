@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, Text, View, Image, ScrollView, TouchableOpacity, Platform, FlatList } from 'react-native'
+import { StyleSheet, Text, View, Image, ScrollView, TouchableOpacity, Platform, FlatList, findNodeHandle } from 'react-native'
 import { useDrawerProgress } from '@react-navigation/drawer';
 import Animated from 'react-native-reanimated';
 import { SwipeListView } from 'react-native-swipe-list-view';
@@ -18,6 +18,7 @@ import { FONTS,COLORS,SIZES } from '../../constants/theme';
 import icons from '../../constants/icons';
 import FooterTotal from '../../components/FooterTotal';
 import constants from '../../constants/constants';
+import TextButton from '../../components/TextButton';
 
 
 const Cart = ( { navigation, route } ) => {
@@ -167,7 +168,7 @@ const Cart = ( { navigation, route } ) => {
                 )}
                 // leftOpenValue={75}
                 // rightOpenValue={-75}
-            />
+            />            
         )
     }
 
@@ -212,21 +213,62 @@ const Cart = ( { navigation, route } ) => {
                     </TouchableOpacity>
                 }
                 rightComponent={
-                    <TopProfileButton navigation={navigation} />
+                    // <TopProfileButton navigation={navigation} />
+                    <View style={{width:25}}/>
                 }
             />
 
             {/* Cart List */}
             {/* <ScrollView> */}
-                {renderCartList()}
+            { cartList.length > 0 
+                ?
+                renderCartList()
+                :
+                <View
+                    style={{
+                        flex:1,
+                        justifyContent:"flex-start",
+                        alignItems:"center",
+                        marginTop:SIZES.padding,
+                        paddingHorizontal:SIZES.padding
+                    }}
+                >
+                    <Image
+                        source={icons.oops}
+                        resizeMode='contain'
+                        style={{
+                            width:'60%',
+                            height:'60%',
+                            tintColor:COLORS.gray3
+                        }}
+                    />
+                    <Text style={{color:COLORS.gray3,...FONTS.body3}}>You have no property added to the cart. Want to add one?</Text>
+                    
+
+                    <TextButton
+                        label="Add a property"
+                        buttonContainerStyle={{
+                            marginTop:SIZES.padding,
+                            height:55,
+                            width:"100%",
+                            borderRadius:SIZES.radius
+                        }}
+                        onPress={() => navigation.goBack()}
+                    />
+
+                </View>
+            }
             {/* </ScrollView> */}
 
             {/* Footer */}
             <FooterTotal
                 subTotal={prices.reduce((accumulator, current) => sumOfPrices(accumulator,current), 0)}
-                total={prices.reduce((accumulator, current) => sumOfPrices(accumulator,current)*1.12, 0)}
-                fee={12/100}
-                onPress={() => navigation.navigate("MyCards")}
+                total={prices.reduce((accumulator, current) => sumOfPrices(accumulator,current)*(1+constants.fees), 0)}
+                fee={constants.fees}
+                onPress={() => {
+
+                    navigation.navigate("MyCards")
+                }}
             />
 
         </Animated.View>

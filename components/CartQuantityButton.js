@@ -5,7 +5,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native'
 import { COLORS, FONTS, SIZES } from '../constants/theme'
 import icons from '../constants/icons'
 
-const CartQuantityButton = ({ containerStyle, quantity, iconStyle, onPress }) => {
+const CartQuantityButton = ({ navigation, containerStyle, quantity, iconStyle, onPress }) => {
     return (
         <TouchableOpacity
             onPress={onPress}

@@ -33,8 +33,9 @@ const Cart = ( { navigation, route } ) => {
 
     React.useEffect(() => {
         if(cartList.length>0){
-            cartList.forEach( (item,index) => {
-                const price = item.cartItem.price ? item.cartItem.price*item.quantity : 0
+            cartList.forEach( (item) => {
+                // const price = item.cartItem.price ? item.cartItem.price*item.quantity : 0
+                const price = item.cartItem.price ? item.cartItem.price : 0
                 setPrices( [...new Set([...prices, price])] )
             } )
         }
@@ -144,17 +145,29 @@ const Cart = ( { navigation, route } ) => {
                             >
                                 {item.cartItem.title}
                             </Text>
-                            <Text
-                                style={{color:COLORS.primary,...FONTS.h3}}
-                            >
-                                {/* {constants.currency} {item.cartItem.price} */}
-                                {constants.currency} { utils.thousandSeparator(item?.cartItem?.price)}
-                            </Text>
+
+                            <View style={{flexDirection:"row",marginTop:SIZES.base}}>
+                                <Image
+                                    source={icons.locationPin}
+                                    style={{
+                                        width:14,
+                                        height:14,
+                                        tintColor:COLORS.gray2,
+                                        marginRight:SIZES.base
+                                    }}
+                                />
+                                <Text
+                                    style={{color:COLORS.gray,...FONTS.body4}}
+                                    numberOfLines={1}
+                                >
+                                    {item?.cartItem?.address}
+                                </Text>
+                            </View>
 
                         </View>
 
                         {/* Quantity */}
-                        <StepperInput
+                        {/* <StepperInput
                             containerStyle={{
                                 height:50,
                                 width:125,
@@ -167,7 +180,23 @@ const Cart = ( { navigation, route } ) => {
                                 }
                             }}
                             onAdd={() => item.quantity+1}
-                        />
+                        /> */}
+                        <View
+                            style={{
+                                flex:1,
+                                marginLeft:10,
+                                alignItems:"flex-end",
+                                // justifyContent:"flex-end"
+                            }}
+                        >
+                            <Text
+                                style={{color:COLORS.primary,...FONTS.h2}}
+                            >
+                                {/* {constants.currency} {item.cartItem.price} */}
+                                {constants.currency} { utils.thousandSeparator(item?.cartItem?.price)}
+                            </Text>
+
+                        </View>
 
                     </View>
                 )}}

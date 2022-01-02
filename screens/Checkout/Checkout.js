@@ -7,9 +7,9 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 // Components
 import TopProfileButton from '../../components/TopProfileButton';
 import Header from '../../components/Header';
-import IconButton from '../../components/IconButton';
+// import IconButton from '../../components/IconButton';
 import FormInput from '../../components/FormInput'
-import StepperInput from '../../components/StepperInput';
+// import StepperInput from '../../components/StepperInput';
 import FooterTotal from '../../components/FooterTotal';
 import CardItem from '../../components/CardItem';
 
@@ -21,7 +21,7 @@ import { FONTS,COLORS,SIZES } from '../../constants/theme';
 import icons from '../../constants/icons';
 
 import constants, { myCards } from '../../constants/constants';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Checkout = ({ navigation, route }) => {
     const dispatch = useDispatch()
@@ -68,26 +68,11 @@ const Checkout = ({ navigation, route }) => {
         if(selectedCartItems) setCartList(selectedCartItems)
     }, [selectedCartItems])
 
-    // React.useEffect(() => {
-    //     (async () => {
-    //         try{
-    //             const cartData = await AsyncStorage.getItem("cartItem")
-    //             if(cartData && cartList.length == 0 ) setCartList(cartData)
-    //             console.log("Checkout Cart List - >>>", cartData)
-    //         }
-    //         catch(err) {
-    //             console.log("Fetching Cart Items from Local Storage failed!", err)
-    //         }
-    //     })()
-    //     return () => {
-    //         setCartList([])
-    //     }
-    // }, [])
-
     React.useEffect(() => {
         if(cartList.length>0){
-            cartList.forEach( (item,index) => {
-                const price = item.cartItem.price ? item.cartItem.price*item.quantity : 0
+            cartList.forEach( (item) => {
+                // const price = item.cartItem.price ? item.cartItem.price*item.quantity : 0
+                const price = item.cartItem.price ? item.cartItem.price : 0
                 setPrices( [...new Set([...prices, price])] )
             } )
         }

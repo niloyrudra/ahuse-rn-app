@@ -9,11 +9,11 @@ import {
     ActivityIndicator
 } from 'react-native';
 
-import useAxios from 'axios-hooks';
-import AsyncStorage from '@react-native-async-storage/async-storage'
+// import useAxios from 'axios-hooks';
+// import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import { connect } from 'react-redux'
-import { getAllCats, getAllTypes, getRecommendedProp, getPopularProp, getAllTaxData } from '../../store/property/propertyActions';
+import { getAllCats, getAllTaxData } from '../../store/property/propertyActions';
 
 // Constants
 import constants from '../../constants/constants';
@@ -26,14 +26,14 @@ import { useDispatch, useSelector } from 'react-redux';
 
 // Components
 import HorizontalCard from '../../components/HorizontalCard';
+import PopularSection from '../../components/PopularSection';
+import RecommendedSection from '../../components/RecommendedSection';
 
 // Modal
 import FilterModal from './FilterModal';
-import PopularSection from '../../components/PopularSection';
-import RecommendedSection from '../../components/RecommendedSection';
 import SearchModal from './SearchModal';
 
-const Home = ({ navigation, allProperties, categories, selectedCats, selectedRecommended, selectedPopular, setAllCats, setPopularList, setRecommendedList }) => {
+const Home = ( { navigation, allProperties, setAllCats } ) => {
 
     const searchRef = useRef()
 
@@ -43,20 +43,22 @@ const Home = ({ navigation, allProperties, categories, selectedCats, selectedRec
 
     const [ searchQuery, setSearchQuery ] = React.useState('')
     const [ searchResultData, setSearchResultData ] = React.useState([])
-    const [recommendedProperty, setRecommendedProperty] = React.useState([])
-    const [selectedCategoryId, setSelectedCategoryId] = React.useState()
-    const [propertiesByType, setPropertiesByType] = React.useState([])
+    const [ recommendedProperty, setRecommendedProperty ] = React.useState([])
+    const [ selectedCategoryId, setSelectedCategoryId ] = React.useState()
+    const [ propertiesByType, setPropertiesByType ] = React.useState([])
     const [ typeId , setTypeId ] = React.useState([])
-    const [typeTaxonomies, setTypeTaxonomies] = React.useState([])
-    const [catTaxonomies, setCatTaxonomies] = React.useState([])
-    const [areaTaxonomies, setAreaTaxonomies] = React.useState([])
-    const [isLoading, setIsLoading] = React.useState(false)
-    const [isLoggedIn, setIsLoggedIn] = React.useState(false)
+    const [ typeTaxonomies, setTypeTaxonomies ] = React.useState([])
+    const [ catTaxonomies, setCatTaxonomies ] = React.useState([])
+    const [ areaTaxonomies, setAreaTaxonomies ] = React.useState([])
+    const [ isLoading, setIsLoading ] = React.useState(false)
+    // const [ isLoggedIn, setIsLoggedIn ] = React.useState(false)
 
+    // Modals
     const [showFilterModal, setShowFilterModal] = React.useState(false)
     const [showSearchResultModal, setShowSearchResultModal] = React.useState(false)
 
     React.useEffect(() => {
+        setIsLoading(true)
         if(allTaxData) {
             if( allTaxData.action_cat ) setTypeTaxonomies( allTaxData.action_cat.filter( item => item.count > 0 ) )
             if( allTaxData.cat ) {
@@ -64,17 +66,17 @@ const Home = ({ navigation, allProperties, categories, selectedCats, selectedRec
                 setAllCats( allTaxData.cat.filter( item => item.count > 0 ) )
             }
             if( allTaxData.area ) setAreaTaxonomies( allTaxData.area.filter( item => item.count > 0 ) )
+
+            setIsLoading(false)
         }
     }, [allTaxData])
 
     React.useEffect(() => {
-
-        if( categories && categories[0]){
-            setSelectedCategoryId( categories[0].id )
-            getPropertiesByCategoryHandler(  categories[0].id )
+        if( catTaxonomies && catTaxonomies[0]){
+            setSelectedCategoryId( catTaxonomies[0].id )
+            getPropertiesByCategoryHandler(  catTaxonomies[0].id )
         }
-
-    },[categories])
+    },[catTaxonomies])
 
     React.useEffect(() => {
         setRecommendedProperty(allProperties.filter( i => i.recommended == 1 ))
@@ -82,7 +84,8 @@ const Home = ({ navigation, allProperties, categories, selectedCats, selectedRec
 
     React.useEffect(() => {
         setTypeId(typeTaxonomies[0]?.id)
-        if(allProperties.length) setPropertiesByType(allProperties.filter( i => i.cad_ids.includes( typeTaxonomies[0]?.id ) ))
+        // if(allProperties.length) setPropertiesByType(allProperties.filter( i => i.cad_ids.includes( typeTaxonomies[0]?.id ) ))
+        if(allProperties.length) setPropertiesByType(allProperties.filter( i => i.cad_ids == typeTaxonomies[0]?.id ))
     },[typeTaxonomies])
 
     // Handler
@@ -101,13 +104,10 @@ const Home = ({ navigation, allProperties, categories, selectedCats, selectedRec
     }
 
     const handleChangeTax = ( categoryId, typeId ) => {
-
         // Set the Selected Cat ID
         setSelectedCategoryId( categoryId )
-
         // Get Filtered properties by category name
         getPropertiesByCategoryHandler(categoryId)
-
         if(typeId)
         {
             getPropertiesByTypeHandler( typeId )
@@ -263,7 +263,8 @@ const Home = ({ navigation, allProperties, categories, selectedCats, selectedRec
         return (
             <FlatList
                 horizontal
-                data={selectedCats}
+                // data={selectedCats}
+                data={catTaxonomies}
                 keyExtractor={item => `${item.id}`}
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{
@@ -278,7 +279,8 @@ const Home = ({ navigation, allProperties, categories, selectedCats, selectedRec
                             height: 55,
                             marginTop: SIZES.padding,
                             marginLeft: index == 0 ? SIZES.padding : SIZES.radius,
-                            marginRight: index == selectedCats.length - 1 ? SIZES.padding : 0,
+                            // marginRight: index == selectedCats.length - 1 ? SIZES.padding : 0,
+                            marginRight: index == catTaxonomies.length - 1 ? SIZES.padding : 0,
                             paddingHorizontal: 8,
                             borderRadius: SIZES.radius,
                             backgroundColor: selectedCategoryId == item.id ? COLORS.primary : COLORS.lightGray2,
@@ -292,7 +294,6 @@ const Home = ({ navigation, allProperties, categories, selectedCats, selectedRec
                                 color: selectedCategoryId == item.id ? COLORS.white : COLORS.darkGray,
                                 alignSelf: 'center',
                                 marginRight: SIZES.base,
-                                // ,
                                 ...FONTS.h3
                             }}
                         >
@@ -340,29 +341,21 @@ const Home = ({ navigation, allProperties, categories, selectedCats, selectedRec
         )
     }
 
-    React.useEffect(() => {
-        if(allProperties.length == 0)
-        {
-            console.log("___________________________NO DATA!!!")
-        }
-        else{
-            console.log("___________________________HAVE DATA!!!")
-        }
-    }, [])
-
     // React.useEffect(() => {
-    //     const checkForUser = async () => {
-    //         const hasToken = await AsyncStorage.getItem("token")
-    //         if( hasToken ) setIsLoggedIn(true)
-    //     };        
-    //     checkForUser()
-
-    //     return () => {
-    //         setIsLoggedIn(false)
+    //     setIsLoading(true)
+    //     if(allProperties.length == 0)
+    //     {
+    //         // console.log("___________________________NO DATA!!!")
+    //         setIsLoading(false)
     //     }
+    //     else{
+    //         // console.log("___________________________HAVE DATA!!!")
+    //         setIsLoading(false)
+    //     }
+    //     // return () => setIsLoading(false)
     // }, [])
 
-    // console.log(isLoggedIn)
+    // console.log("___LOADING___",isLoading)
 
     return (
 
@@ -398,74 +391,67 @@ const Home = ({ navigation, allProperties, categories, selectedCats, selectedRec
                 />
             }
 
-            {/* List */}
-            <FlatList
-                // data={allProperties}
-                data={propertiesByType}
-                keyExtractor={item => `${item.id}`}
-                showsVerticalScrollIndicator={false}
-                ListHeaderComponent={
-                    <View>
-                        {/* Top Location */}
-                        {renderLocationSection()}
+            {
+                isLoading
+                    ?
+                    <ActivityIndicator
+                        animating={isLoading}
+                        size="large"
+                        color={COLORS.primary}
+                    />
+                    :
+                    //List
+                    <FlatList
+                        // data={allProperties}
+                        data={propertiesByType}
+                        keyExtractor={item => `${item.id}`}
+                        showsVerticalScrollIndicator={false}
+                        ListHeaderComponent={
+                            <View>
+                                {/* Top Location */}
+                                {renderLocationSection()}
 
-                        {/* Categories */}
-                        {renderCatSection()}
+                                {/* Categories */}
+                                {renderCatSection()}
 
-                        {/* Popular Section */}
-                        <PopularSection navigation={navigation} data={recommendedProperty} catId={selectedCategoryId} />
+                                {/* Popular Section */}
+                                <PopularSection navigation={navigation} data={recommendedProperty} catId={selectedCategoryId} />
 
-                        {/* Recommended Section */}
-                        <RecommendedSection navigation={navigation} data={recommendedProperty} catId={selectedCategoryId} />
+                                {/* Recommended Section */}
+                                <RecommendedSection navigation={navigation} data={recommendedProperty} catId={selectedCategoryId} />
 
-                        {/* Types */}
-                        {renderTypes()}
+                                {/* Types */}
+                                {renderTypes()}
 
-                    </View>
-                }
-                renderItem={( { item, index } ) => {
-                    if(isLoading){
-                        return (
-                            <View
-                                style={{
-                                    flex:1,
-                                    alignItems:"center",
-                                    justifyContent:"center"
-                                }}
-                            >
-                                <ActivityIndicator size="large" color={COLORS.primary} />
                             </View>
+                        }
+                        renderItem={( { item, index } ) => (
+                                <HorizontalCard
+                                    containerStyle={{
+                                        height:130,
+                                        alignItems:"center",
+                                        marginHorizontal: SIZES.padding,
+                                        marginBottom: SIZES.radius
+                                    }}
+                                    imageStyle={{
+                                        // marginTop: 20,
+                                        margin: 10,
+                                        height:110,
+                                        width:110,
+                                        borderRadius: SIZES.radius
+                                    }}
+                                    item={item}
+                                    onPress={() => navigation.navigate("PropertyDetail", {item:item})}
+                                />
+                            )                          
+                        }
+                        ListFooterComponent={
+                            <View style={{height:200}} />
+                        }
+                    />
+            }
 
-                        )
-                    }
-                    else{
 
-                        return(
-                            <HorizontalCard
-                                containerStyle={{
-                                    height:130,
-                                    alignItems:"center",
-                                    marginHorizontal: SIZES.padding,
-                                    marginBottom: SIZES.radius
-                                }}
-                                imageStyle={{
-                                    // marginTop: 20,
-                                    margin: 10,
-                                    height:110,
-                                    width:110,
-                                    borderRadius: SIZES.radius
-                                }}
-                                item={item}
-                                onPress={() => navigation.navigate("PropertyDetail", {item:item})}
-                            />
-                        )
-                    }
-                    
-                }}
-                ListFooterComponent={
-                    <View style={{height:200}} />
-                }
-            />
 
         </View>
     )
@@ -476,8 +462,8 @@ function mapStateToProps( state ) {
     return {
         // selectedProperties: state?.propertyReducer?.allProperties,
         selectedCats: state?.propertyReducer?.allCategories,
-        selectedPopular: state?.propertyReducer?.popular,
-        selectedRecommended: state?.propertyReducer?.recommended,
+        // selectedPopular: state?.propertyReducer?.popular,
+        // selectedRecommended: state?.propertyReducer?.recommended,
     }
 }
 
@@ -485,8 +471,8 @@ function mapDispatchToProps( dispatch ) {
     return {
         // setAllProperties: selectedProperties => dispatch( getAllProperties( selectedProperties ) ),
         setAllCats: selectedCats => dispatch( getAllCats( selectedCats ) ),
-        setPopularList: selectedPopular => dispatch( getPopularProp( selectedPopular ) ),
-        setRecommendedList: selectedRecommended => dispatch( getRecommendedProp( selectedRecommended ) ),
+        // setPopularList: selectedPopular => dispatch( getPopularProp( selectedPopular ) ),
+        // setRecommendedList: selectedRecommended => dispatch( getRecommendedProp( selectedRecommended ) ),
     }
 }
 

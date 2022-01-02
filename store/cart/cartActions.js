@@ -21,7 +21,7 @@ const insertCartItem = ( cartItem ) => {
         payload: cartItem
     }
 }
-export const setNewCartItem = ( data, quantity ) => {
+export const setNewCartItem = ( data ) => {
 
     const d = new Date();
     return dispatch => {
@@ -29,7 +29,7 @@ export const setNewCartItem = ( data, quantity ) => {
             cartId: d.getMilliseconds(),
             cartItemId: data.id,
             cartItem: data,
-            quantity: quantity
+            // quantity: quantity
         }) )
     }
 }

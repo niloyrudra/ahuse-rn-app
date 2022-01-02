@@ -10,12 +10,14 @@ import { setNewCartItem } from '../../store/cart/cartActions';
 // Components
 import Header from '../../components/Header';
 import LineDivider from '../../components/LineDivider';
-// Contants
+// Constants
 import { COLORS, FONTS, SIZES } from '../../constants/theme'
+import constants from '../../constants/constants';
 import icons from '../../constants/icons'
 import CartQuantityButton from '../../components/CartQuantityButton';
 import StepperInput from '../../components/StepperInput';
 import TextButton from '../../components/TextButton';
+import TextIconButton from '../../components/TextIconButton';
 
 const PropertyDetail = ({navigation, route}) => {
     const property = route.params.item
@@ -168,14 +170,32 @@ const PropertyDetail = ({navigation, route}) => {
                         { property?.title }
                     </Text>
                     {/* Address */}
-                    <Text
+                    <View
                         style={{
-                            color:COLORS.gray,
-                            ...FONTS.body4
+                            // flex:1,
+                            flexDirection:"row",
+                            // alignItems:"center",
+                            // justifyContent:"flex-end"
                         }}
                     >
-                        { property?.address }
-                    </Text>
+                        <Image
+                            source={icons.locationPin}
+                            style={{
+                                width:16,
+                                height:16,
+                                tintColor:COLORS.gray2,
+                                marginRight:SIZES.base
+                            }}
+                        />
+                        <Text
+                            style={{
+                                color:COLORS.gray,
+                                ...FONTS.body4
+                            }}
+                        >
+                            { property?.address }
+                        </Text>
+                    </View>
 
                     {/* Type */}
                     {renderTypes()}
@@ -307,10 +327,18 @@ const PropertyDetail = ({navigation, route}) => {
                 <MapView
                     // mapType={Platform.OS == "android" ? "none" : "standard"}
                     // region={region}
+                    mapType="hybrid" // standard, terrain, mutedStandard, hybrid, satellite, none
                     initialRegion={region}
                     provider={PROVIDER_GOOGLE}
                     // customMapStyle={mapStyle}
                     showsUserLocation={true}
+                    loadingEnabled={true}
+                    loadingIndicatorColor={COLORS.primary}
+                    cacheEnabled={true}
+                    scrollEnabled={false}
+                    zoomEnabled={false}
+                    rotateEnabled={false}
+                    pitchEnabled={false}
                     onRegionChange={onRegionChangeHandler}
                     style={{
                         width:'100%',
@@ -481,14 +509,14 @@ const PropertyDetail = ({navigation, route}) => {
             <View
                 style={{
                     flexDirection:"row",
-                    height:120,
+                    height:100, // 120
                     alignItems:"center",
                     paddingHorizontal:SIZES.padding,
                     paddingBottom:SIZES.radius
                 }}
             >
                 {/* Stepper Input */}
-                <StepperInput
+                {/* <StepperInput
                     value={quantity}
                     // containerStyle={{}}
                     onMinus={() => {
@@ -497,12 +525,32 @@ const PropertyDetail = ({navigation, route}) => {
                         }
                     }}
                     onAdd={() => setQuantity(quantity+1)}
+                /> */}
+                {/* Contact */}
+                <TextIconButton
+                    label="Mail Us"
+                    icon={icons.envelope}
+                    iconPosition="right"
+                    containerStyle={{
+                        flexDirection:"row",
+                        alignItems:"center",
+                        justifyContent:"center",
+                        height:60,
+                        marginLeft:SIZES.radius,
+                        paddingHorizontal:SIZES.padding * 1.25,
+                        borderRadius:SIZES.radius,
+                        backgroundColor:COLORS.darkGray
+                    }}
+                    iconStyle={{
+                        tintColor:COLORS.white,
+                        marginLeft:SIZES.radius
+                    }}
                 />
 
                 {/* Button */}
                 <TextButton
                     label="Buy Now"
-                    label2={property?.price ? `£${property?.price}` : `£00.00`}
+                    label2={property?.price ? `${constants.currency} ${property?.price}` : `${constants.currency} 00.00`}
                     // labelStyle={{}}
                     buttonContainerStyle={{
                         flex:1,
@@ -517,7 +565,8 @@ const PropertyDetail = ({navigation, route}) => {
                         backgroundColor:COLORS.primary
                     }}
                     onPress={() => {
-                        dispatch( setNewCartItem( property, quantity ) )
+                        // dispatch( setNewCartItem( property, quantity ) )
+                        dispatch( setNewCartItem( property ) )
                         // navigation.navigate("Cart", {item:property, qnt: quantity})
                         navigation.navigate("Cart")
                     }}

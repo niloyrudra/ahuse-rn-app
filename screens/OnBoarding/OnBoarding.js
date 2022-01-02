@@ -243,13 +243,14 @@ const OnBoarding = ({navigation, route, }) => {
                 scrollEventThrottle={16}
                 showsHorizontalScrollIndicator={false}
                 
-                onScrollToIndexFailed={info => {
-                    const wait = new Promise(resolve => setTimeout(resolve, 700));
-                    wait.then(() => {
-                       flatListRef.current?.scrollToIndex({ index: info.index, animated: false });
-                    });
-                }}
-                
+                // onScrollToIndexFailed={info => {
+                //     const wait = new Promise(resolve => setTimeout(resolve, 700));
+                //     wait.then(() => {
+                //        flatListRef.current?.scrollToIndex({ index: info.index, animated: false });
+                //     });
+                // }}
+                onScrollToIndexFailed={()=>{}}
+
                 onScroll={Animated.event(
                     [
                         {

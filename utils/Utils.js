@@ -68,20 +68,11 @@ function calculateAngle(coordinates) {
 
     return Math.atan2(dy, dx) * 180 / Math.PI
 }
+
 function thousandSeparator(givenNum) {
-    if(givenNum >= 1000)
-    {
-        return givenNum.toString().replace(/(?=(\d{3})+(?!\d))/g, ",")
-    }
-    return givenNum
-
-    
-    // return givenNum.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")
+    if(givenNum < 1000) return givenNum
+    return givenNum.toString().replace(/(?=(\d{3})+(?!\d))/g, ",").charAt( 0 ) === ',' ? givenNum.toString().replace(/(?=(\d{3})+(?!\d))/g, ",").slice(1) : givenNum.toString().replace(/(?=(\d{3})+(?!\d))/g, ",") // givenNum.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",")
 }
-
-// function numberWithCommas(givenNum) {
-//     return givenNum.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
-// }
 
 const utils = {
     validateUsername,

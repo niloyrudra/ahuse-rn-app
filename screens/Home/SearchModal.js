@@ -52,42 +52,44 @@ const SearchModal = ({ navigation, isVisible, searchResultData, query, onClose }
             setSearchResult( [] )
             setIsLoading(false)
         }
-    }, [searchResultData])
+    }, [])
 
     // Render Sections
     const renderSearchResult = () => {
         return (
-            <FlatList
-                data={searchResult}
-                showsVerticalScrollIndicator={false}
-                keyExtractor={ item => `${item.id}`}
-                renderItem={( { item, index } ) => (
-                    <HorizontalCard
-                        containerStyle={{
-                            height:130,
-                            alignItems:"center",
-                            // marginHorizontal: SIZES.padding,
-                            marginVertical: SIZES.radius
-                        }}
-                        imageStyle={{
-                            // marginTop: 20,
-                            margin: 10,
-                            height:110,
-                            width:110,
-                            borderRadius: SIZES.radius
-                        }}
-                        item={item}
-                        onPress={() => navigation.navigate("PropertyDetail", {item:item})}
-                    />
-                ) }
-                ListFooterComponent={
-                    <View
-                        style={{
-                            height:200
-                        }}
-                    />
-                }
-            />
+            <>
+                <FlatList
+                    data={searchResult}
+                    showsVerticalScrollIndicator={false}
+                    keyExtractor={ item => `${item.id}`}
+                    renderItem={( { item, index } ) => (
+                        <HorizontalCard
+                            containerStyle={{
+                                height:130,
+                                alignItems:"center",
+                                // marginHorizontal: SIZES.padding,
+                                marginVertical: SIZES.radius
+                            }}
+                            imageStyle={{
+                                // marginTop: 20,
+                                margin: 10,
+                                height:110,
+                                width:110,
+                                borderRadius: SIZES.radius
+                            }}
+                            item={item}
+                            onPress={() => navigation.navigate("PropertyDetail", {item:item})}
+                        />
+                    ) }
+                    ListFooterComponent={
+                        <View
+                            style={{
+                                height:200
+                            }}
+                        />
+                    }
+                />
+            </>
         )
     }
 

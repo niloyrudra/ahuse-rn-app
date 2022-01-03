@@ -10,14 +10,17 @@ import { setNewCartItem } from '../../store/cart/cartActions';
 // Components
 import Header from '../../components/Header';
 import LineDivider from '../../components/LineDivider';
+import CartQuantityButton from '../../components/CartQuantityButton';
+// import StepperInput from '../../components/StepperInput';
+import TextButton from '../../components/TextButton';
+import TextIconButton from '../../components/TextIconButton';
+
 // Constants
 import { COLORS, FONTS, SIZES } from '../../constants/theme'
 import constants from '../../constants/constants';
 import icons from '../../constants/icons'
-import CartQuantityButton from '../../components/CartQuantityButton';
-import StepperInput from '../../components/StepperInput';
-import TextButton from '../../components/TextButton';
-import TextIconButton from '../../components/TextIconButton';
+import utils from '../../utils/Utils';
+
 
 const PropertyDetail = ({navigation, route}) => {
     const property = route.params.item
@@ -34,16 +37,16 @@ const PropertyDetail = ({navigation, route}) => {
     React.useEffect(() => {
         if( route.params ) {
             setRegion({
-                latitude: parseFloat(property.latitude), // 37.78825
-                longitude: parseFloat(property.longitude), // -122.4324
+                latitude: parseFloat(property.latitude),
+                longitude: parseFloat(property.longitude),
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
             })
         }
         return () => {
-            setQuantity(1)
+            // setQuantity(1)
         }
-    }, [])
+    }, [property])
 
     // const [markers, setMarkers] = React.useState([
     //     {
@@ -326,20 +329,20 @@ const PropertyDetail = ({navigation, route}) => {
             >
                 <MapView
                     // mapType={Platform.OS == "android" ? "none" : "standard"}
-                    // region={region}
+                    region={region}
                     mapType="hybrid" // standard, terrain, mutedStandard, hybrid, satellite, none
-                    initialRegion={region}
+                    // initialRegion={region}
                     provider={PROVIDER_GOOGLE}
                     // customMapStyle={mapStyle}
-                    showsUserLocation={true}
-                    loadingEnabled={true}
-                    loadingIndicatorColor={COLORS.primary}
-                    cacheEnabled={true}
+                    // showsUserLocation={true}
+                    // loadingEnabled={true}
+                    // loadingIndicatorColor={COLORS.primary}
+                    // cacheEnabled={true}
                     scrollEnabled={false}
                     zoomEnabled={false}
                     rotateEnabled={false}
-                    pitchEnabled={false}
-                    onRegionChange={onRegionChangeHandler}
+                    // pitchEnabled={false}
+                    // onRegionChange={onRegionChangeHandler}
                     style={{
                         width:'100%',
                         height: '100%'
@@ -366,7 +369,8 @@ const PropertyDetail = ({navigation, route}) => {
                             source={icons.locationPin}
                             style={{
                                 width:"100%",
-                                height:"100%"
+                                height:"100%",
+                                tintColor:COLORS.primary
                             }}
                         />
                     </View>
@@ -550,7 +554,7 @@ const PropertyDetail = ({navigation, route}) => {
                 {/* Button */}
                 <TextButton
                     label="Buy Now"
-                    label2={property?.price ? `${constants.currency} ${property?.price}` : `${constants.currency} 00.00`}
+                    label2={property?.price ? `${constants.currency} ${utils.thousandSeparator(property?.price)}` : `${constants.currency} 00.00`}
                     // labelStyle={{}}
                     buttonContainerStyle={{
                         flex:1,

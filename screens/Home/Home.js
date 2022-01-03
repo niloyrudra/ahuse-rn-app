@@ -35,13 +35,14 @@ import SearchModal from './SearchModal';
 
 const Home = ( { navigation, allProperties, setAllCats } ) => {
 
+    let searchQueryTimeout;
     const searchRef = useRef()
 
     const dispatch = useDispatch()
     React.useEffect(() => dispatch( getAllTaxData() ), []);
     const allTaxData = useSelector( state => state.propertyReducer.allTax )
 
-    const [ searchQuery, setSearchQuery ] = React.useState('')
+    // const [ searchQuery, setSearchQuery ] = React.useState('')
     const [ searchResultData, setSearchResultData ] = React.useState([])
     const [ recommendedProperty, setRecommendedProperty ] = React.useState([])
     const [ selectedCategoryId, setSelectedCategoryId ] = React.useState()
@@ -157,23 +158,24 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
                     // value={searchQuery}
                     placeholder="Search Properties"
                     onChangeText={(value) => {
-                        searchRef.current = value
-                        if(searchRef.current.length > 1)
-                        {
-                            setSearchQuery(value)
-                            setTimeout(() => {
-                                if(allProperties)
-                                {
-                                    allProperties.forEach(item => {
-                                        if(item.title.toLowerCase().includes( value.toLowerCase() ))
-                                        {
-                                            setSearchResultData([...searchResultData, item])
-                                        }
-                                    })
-                                    setShowSearchResultModal(true)
-                                }
-                            }, 500)
-                        }
+                        // setSearchQuery(value)
+                        clearTimeout(searchQueryTimeout)
+                        searchQueryTimeout = setTimeout(() => {
+                            searchRef.current = value
+                            if(searchRef.current.length == 0) return
+                            if(allProperties)
+                            {
+                                allProperties.forEach(item => {
+                                    if(item.title.toLowerCase().includes( value.toLowerCase() ))
+                                    {
+                                        setSearchResultData([...searchResultData, item])
+                                    }
+                                })
+                                setShowSearchResultModal(true)
+                                console.log( typeof searchRef.current.length, searchRef.current.length)
+                            }
+                        }, 750)
+
                     }}
                 />
 
@@ -386,7 +388,8 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
                     navigation={navigation}
                     isVisible={showSearchResultModal}
                     searchResultData={ searchResultData }
-                    query={searchQuery}
+                    query={ typeof searchRef.current == 'string' ? searchRef.current : ''}
+                    // query={searchRef.current}
                     onClose={() => setShowSearchResultModal(false)}
                 />
             }

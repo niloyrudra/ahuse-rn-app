@@ -165,14 +165,21 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
                             if(searchRef.current.length == 0) return
                             if(allProperties)
                             {
-                                allProperties.forEach(item => {
-                                    if(item.title.toLowerCase().includes( value.toLowerCase() ))
-                                    {
-                                        setSearchResultData([...searchResultData, item])
-                                    }
-                                })
+                                // allProperties.forEach((item,index) => {
+                                //     if(item.address.toLowerCase().includes( value.toLowerCase() ) || item.title.toLowerCase().includes( value.toLowerCase() ))
+                                //     {
+                                //         console.log('Times', index)
+                                //         setSearchResultData([...searchResultData, item])
+                                //     }
+                                // })
+
+                                const data = allProperties.filter( item => item.address.toLowerCase().includes( value.toLowerCase() ) || item.title.toLowerCase().includes( value.toLowerCase() ) )
+                                if(data)
+                                {
+                                    setSearchResultData(data)
+                                }
+
                                 setShowSearchResultModal(true)
-                                console.log( typeof searchRef.current.length, searchRef.current.length)
                             }
                         }, 750)
 
@@ -388,7 +395,7 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
                     navigation={navigation}
                     isVisible={showSearchResultModal}
                     searchResultData={ searchResultData }
-                    query={ typeof searchRef.current == 'string' ? searchRef.current : ''}
+                    query={ typeof searchRef.current !== 'object' ? searchRef.current : ''}
                     // query={searchRef.current}
                     onClose={() => setShowSearchResultModal(false)}
                 />

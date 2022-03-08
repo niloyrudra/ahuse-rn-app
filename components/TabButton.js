@@ -21,12 +21,14 @@ const TabButton = ({ label, icon, onPress, isFocused, outerContainerStyles, inne
                 <Animated.View
                     style={[
                         {
-                            flexDirection:"row",
+                            // flex:1,
+                            // flexDirection:"row",
                             alignItems: "center",
                             justifyContent: "center",
-                            height:50,
-                            width:"80%",
+                            // height:50,
+                            // width:"50%",
                             borderRadius: 25,
+                            padding:15
                         },
                         innerContainerStyles
                     ]}
@@ -40,12 +42,13 @@ const TabButton = ({ label, icon, onPress, isFocused, outerContainerStyles, inne
                         }}
                     />
 
-                    {
+                    {/* {
                         isFocused && (
                             <Text
                                 numberOfLines={1}
                                 style={{
-                                    marginLeft:SIZES.base,
+                                    // marginLeft:SIZES.base,
+                                    marginTop:SIZES.base,
                                     color: isFocused ? COLORS.white : COLORS.gray,
                                     ...FONTS.h3
                                 }}
@@ -53,7 +56,7 @@ const TabButton = ({ label, icon, onPress, isFocused, outerContainerStyles, inne
                                 {label}
                             </Text>
                             )
-                    }
+                    } */}
                     
 
                 </Animated.View>

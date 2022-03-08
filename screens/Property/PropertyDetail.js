@@ -1,16 +1,18 @@
 import React from 'react'
-import { Text, View, Image, ScrollView, TouchableOpacity, Platform, FlatList } from 'react-native'
+import { Text, View, Image, ScrollView, TouchableOpacity, Platform, FlatList, Alert, Clipboard } from 'react-native'
 import { useDrawerProgress } from '@react-navigation/drawer';
+import * as MailComposer from 'expo-mail-composer';
 import Animated from 'react-native-reanimated';
-import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps'
 
-import { useDispatch } from 'react-redux'
-import { setNewCartItem } from '../../store/cart/cartActions';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// import { useDispatch } from 'react-redux'
+// import { setNewCartItem } from '../../store/cart/cartActions';
 
 // Components
 import Header from '../../components/Header';
 import LineDivider from '../../components/LineDivider';
-import CartQuantityButton from '../../components/CartQuantityButton';
+// import CartQuantityButton from '../../components/CartQuantityButton';
 // import StepperInput from '../../components/StepperInput';
 import TextButton from '../../components/TextButton';
 import TextIconButton from '../../components/TextIconButton';
@@ -23,68 +25,63 @@ import utils from '../../utils/Utils';
 
 
 const PropertyDetail = ({navigation, route}) => {
+
+    
     const property = route.params.item
-    const dispatch = useDispatch()
 
-    const [quantity, setQuantity] = React.useState(1)
-    const [region, setRegion] = React.useState({
-        latitude: 37.78825, // 37.78825
-        longitude: -122.4324, // -122.4324
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-    })
-
-    React.useEffect(() => {
-        if( route.params ) {
-            setRegion({
-                latitude: parseFloat(property.latitude),
-                longitude: parseFloat(property.longitude),
-                latitudeDelta: 0.0922,
-                longitudeDelta: 0.0421,
-            })
-        }
-        return () => {
-            // setQuantity(1)
-        }
-    }, [property])
-
-    // const [markers, setMarkers] = React.useState([
-    //     {
-    //         latlng: { latitude : 37.78825, longitude : -122.4324 },
-    //         title: 'Title',
-    //         description: 'Description',
-    //     },
-    //     {
-    //         latlng: { latitude : 36.78825, longitude : -102.4324 },
-    //         title: 'Title 1',
-    //         description: 'Description 1',
-    //     },
-    //     {
-    //         latlng: { latitude : 30.78825, longitude : -111.4324 },
-    //         title: 'Title 2',
-    //         description: 'Description 2',
-    //     },
-    // ])
+    const [ email, setEmail ] = React.useState('')
+    const [ userId, setUserId ] = React.useState(null)
+    const [ isFav, setIsFav ] = React.useState(false)
+    const [ favProps, setFavProps ] = React.useState([])
+    // const dispatch = useDispatch()
 
     const progress = useDrawerProgress()
-
-
     const scale = Animated.interpolateNode( progress, {
         inputRange: [0 ,1],
         outputRange: [1, 0.8]
     } )
-
     const borderRadius = Animated.interpolateNode( progress, {
         inputRange: [0 ,1],
         outputRange: [0, 26]
     } )
-
     const animatedStyle = { borderRadius, transform: [{scale}] }
 
+    React.useEffect(() => {
+        (async () => {
+            try{
+                const userId = await AsyncStorage.getItem("userId")
+                const email = await AsyncStorage.getItem("email")
+                const favPropList = await getFavPropList()
+                if(userId) setUserId(userId)
+                if(email) setEmail(email)
+                if(favPropList) setFavProps(favPropList)
+            }
+            catch(err){
+                console.log("Profile data Async Error", err)
+                setUserId(null)
+                setEmail('')
+            }
+        })()
+    }, [])
+
     // Handler
-    const onRegionChangeHandler = ( region ) => {
-        setRegion( region )
-    }
+    const sendFeedback = () => {
+        MailComposer.composeAsync({
+          recipients: [property.publisher_email],
+          subject: "",
+          body: ""
+        }).catch(() =>
+          Alert.alert("Unable To Send Feedback", undefined, [
+            {
+              text: "Copy feedback email",
+              onPress: () => Clipboard.setString(property.publisher_email)
+            },
+            {
+              text: "OK"
+            }
+          ])
+        );
+      };
 
     // Render Sections
     const renderDetail= () => {
@@ -129,7 +126,7 @@ const PropertyDetail = ({navigation, route}) => {
                             style={{
                                 width:20,
                                 height:20,
-                                tintColor: property?.isFav ? COLORS.primary : COLORS.gray
+                                tintColor: ( isFav && favProps.length && favProps.includes(property.id) ) ? COLORS.primary : COLORS.gray
                             }}
                         />
 
@@ -312,73 +309,39 @@ const PropertyDetail = ({navigation, route}) => {
     }
 
     const renderMap = () => {
-
+        
         return (
-            <View 
+            <TouchableOpacity 
                 style={{
                     flex:1,
-                    height: 240,
+                    height: 300,
                     justifyContent:"center",
                     alignItems:"center",
                     borderRadius: SIZES.radius,
                     backgroundColor: COLORS.transparentBlack1,
                     marginHorizontal: SIZES.padding,
                     marginVertical: SIZES.padding,
+                    backgroundColor:COLORS.gray2,
                     overflow:"hidden"
                 }}
+                onPress={() => navigation.navigate("SingleMap", {item: property})}
             >
-                <MapView
-                    // mapType={Platform.OS == "android" ? "none" : "standard"}
-                    region={region}
-                    mapType="hybrid" // standard, terrain, mutedStandard, hybrid, satellite, none
-                    // initialRegion={region}
-                    provider={PROVIDER_GOOGLE}
-                    // customMapStyle={mapStyle}
-                    // showsUserLocation={true}
-                    // loadingEnabled={true}
-                    // loadingIndicatorColor={COLORS.primary}
-                    // cacheEnabled={true}
-                    scrollEnabled={false}
-                    zoomEnabled={false}
-                    rotateEnabled={false}
-                    // pitchEnabled={false}
-                    // onRegionChange={onRegionChangeHandler}
-                    style={{
-                        width:'100%',
-                        height: '100%'
-                    }}
-                >
-                    <MapView.Marker
-                        title={property?.title}
-                        description={property?.address}
-                        coordinate={{"latitude":parseFloat(property?.latitude),"longitude":parseFloat(property?.longitude)}}
-                        // width={80}
-                        // height={60}
-                        // tracksViewChanges={false}
-                        // image={icons.location_clr}
-                        // icon={icons.location_clr}
-                    >
-                    <View
+                {
+                    constants.GOOGLE_MAP_API_KEY !== '' && property.latitude !== '' && property.latitude !== '' ?
+
+                    <Image
+                        source={{uri:`https://maps.googleapis.com/maps/api/staticmap?center=${property.latitude},${property.longitude}&zoom=13&size=600x300&maptype=standard&markers=color:${COLORS.primaryText}%7Clabel:S%7C${property.latitude},${property.longitude}&key=${constants.GOOGLE_MAP_API_KEY}`}}
                         style={{
-                            width:30,
-                            height:30
+                            flex:1,
+                            width:'100%',
+                            backgroundColor:COLORS.lightGray
                         }}
-                    >
+                    />
+                    :
+                    <Text>No map data found!</Text>
+                }
 
-                        <Image
-                            source={icons.locationPin}
-                            style={{
-                                width:"100%",
-                                height:"100%",
-                                tintColor:COLORS.primary
-                            }}
-                        />
-                    </View>
-                    </MapView.Marker>
-
-                </MapView>
-
-            </View>
+            </TouchableOpacity>
         )
     }
 
@@ -532,7 +495,8 @@ const PropertyDetail = ({navigation, route}) => {
                 /> */}
                 {/* Contact */}
                 <TextIconButton
-                    label="Mail Us"
+                    // label="Mail Us"
+                    label="E-mail"
                     icon={icons.envelope}
                     iconPosition="right"
                     containerStyle={{
@@ -541,7 +505,8 @@ const PropertyDetail = ({navigation, route}) => {
                         justifyContent:"center",
                         height:60,
                         marginLeft:SIZES.radius,
-                        paddingHorizontal:SIZES.padding * 1.25,
+                        // paddingHorizontal:SIZES.padding * 1.25,
+                        paddingHorizontal:SIZES.padding,
                         borderRadius:SIZES.radius,
                         backgroundColor:COLORS.darkGray
                     }}
@@ -549,13 +514,22 @@ const PropertyDetail = ({navigation, route}) => {
                         tintColor:COLORS.white,
                         marginLeft:SIZES.radius
                     }}
+                    onPress={sendFeedback}
                 />
 
                 {/* Button */}
                 <TextButton
-                    label="Buy Now"
-                    label2={property?.price ? `${constants.currency} ${utils.thousandSeparator(property?.price)}` : `${constants.currency} 00.00`}
-                    // labelStyle={{}}
+                    // label="Buy Now"
+                    label=""
+                    label2={property?.price ? `Price: ${constants.currency}${utils.thousandSeparator(property?.price)}` : `Price:  ${constants.currency}00.00`}
+                    labelStyle={{
+                        color:COLORS.primary,
+                        ...FONTS.h1,
+                    }}
+                    label2Style={{
+                        color:COLORS.primary,
+                        ...FONTS.h1
+                    }}
                     buttonContainerStyle={{
                         flex:1,
                         flexDirection:"row",
@@ -564,20 +538,66 @@ const PropertyDetail = ({navigation, route}) => {
                         height:60,
                         marginLeft:SIZES.radius,
                         // paddingHorizontal:SIZES.radius,
-                        paddingHorizontal:SIZES.padding,
-                        borderRadius:SIZES.radius,
-                        backgroundColor:COLORS.primary
+                        // paddingHorizontal:SIZES.padding,
+                        // borderRadius:SIZES.radius,
+                        // backgroundColor:COLORS.darkGray
+                        backgroundColor:COLORS.transparent,
+                        border:"none"
                     }}
-                    onPress={() => {
-                        // dispatch( setNewCartItem( property, quantity ) )
-                        dispatch( setNewCartItem( property ) )
-                        // navigation.navigate("Cart", {item:property, qnt: quantity})
-                        navigation.navigate("Cart")
-                    }}
+                    // onPress={}
                 />
 
             </View>
         )
+    }
+
+    // console.log(isFav)
+    // Handler
+
+
+    const getFavPropList = async () => {
+        const list = await AsyncStorage.getItem(`favProps${userId}`)
+        return list ? JSON.parse(list) : []
+    }
+    const setFavPropList = async () => {
+        if( userId ) {
+            let newList = []
+            setIsFav(!isFav);
+            const propertyId = property.id
+
+            if(favProps.includes(propertyId)) {
+                newList = favProps.filter( favProp => favProp !== propertyId )
+            }
+            else{
+                newList = [...favProps, propertyId]
+            }
+
+            setFavProps(newList)
+            AsyncStorage.setItem( `favProps${userId}`, JSON.stringify( newList ) ) //favProps
+        }
+    }
+
+    const setFavPropHandler = async () => {
+        if( !userId ) {
+            Alert.alert(
+                "Sorry!",
+                "You need to log in to like this property!",
+                [
+                    {
+                        text: "Login",
+                        onPress: navigation.navigate("Auth"),
+                        style: "Ok"
+                    },
+                    {
+                        text: "Cancel",
+                        onPress: console.log("Cancelled"),
+                        style: "cancel"
+                    },
+                ]
+            );
+            return;
+        }
+        setFavPropList();
     }
 
     return (
@@ -622,13 +642,27 @@ const PropertyDetail = ({navigation, route}) => {
                     </TouchableOpacity>
                 }
                 rightComponent={
-                    <CartQuantityButton
-                        containerStyle={{}}
-                        iconStyle={{}}
-                        quantity={quantity}
-                        icons={icons.cart}
-                        onPress={() => navigation.navigate("Cart")}
-                    />
+                    <TouchableOpacity
+                        style={{
+                            width:40,
+                            height:40,
+                            justifyContent:"center",
+                            alignItems: "center",
+                            borderWidth: 1,
+                            borderColor: COLORS.gray2,
+                            borderRadius: SIZES.radius,
+                        }}
+                        onPress={setFavPropHandler}
+                    >
+                        <Image
+                            source={icons.love}
+                            style={{
+                                width:20,
+                                height:20,
+                                tintColor: ( isFav && favProps.length && favProps.includes(property.id) ) ? COLORS.primary : COLORS.gray
+                            }}
+                        />
+                    </TouchableOpacity>
                 }
             />
 

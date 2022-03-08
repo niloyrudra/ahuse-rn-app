@@ -6,20 +6,22 @@ import {
     Image,
     TextInput,
     FlatList,
-    ActivityIndicator
+    ActivityIndicator,
+    Switch
 } from 'react-native';
 
-// import useAxios from 'axios-hooks';
-// import AsyncStorage from '@react-native-async-storage/async-storage'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { connect } from 'react-redux'
-import { getAllCats, getAllTaxData } from '../../store/property/propertyActions';
+import { getAllProperties, getAllCats, getAllTaxData } from '../../store/property/propertyActions';
 
 // Constants
-import constants from '../../constants/constants';
+// import constants from '../../constants/constants';
 import icons from '../../constants/icons';
 import { COLORS ,FONTS ,SIZES } from '../../constants/theme';
-import {myProfile} from '../../constants/constants'
+// import {myProfile} from '../../constants/constants'
+
+// import useAxios from 'axios-hooks';
 
 // Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -32,17 +34,25 @@ import RecommendedSection from '../../components/RecommendedSection';
 // Modal
 import FilterModal from './FilterModal';
 import SearchModal from './SearchModal';
+import UserLocation from '../../components/UserLocation';
 
-const Home = ( { navigation, allProperties, setAllCats } ) => {
-
-    let searchQueryTimeout;
-    const searchRef = useRef()
+const Home = ( { navigation, selectedProperties, setAllProperties, setAllCats } ) => {
 
     const dispatch = useDispatch()
     React.useEffect(() => dispatch( getAllTaxData() ), []);
     const allTaxData = useSelector( state => state.propertyReducer.allTax )
 
-    // const [ searchQuery, setSearchQuery ] = React.useState('')
+    let searchQueryTimeout;
+    const searchRef = useRef()
+    const searchModelRef = useRef()
+
+    const [ properties, setProperties ] = React.useState(selectedProperties)
+
+    const [ isLoggedIn, setIsLoggedIn ] = React.useState(false)
+    const [ userId, setUserId ] = React.useState(null)
+    const [ favPropList, setFavPropList ] = React.useState([])
+
+    const [ searchQuery, setSearchQuery ] = React.useState('')
     const [ searchResultData, setSearchResultData ] = React.useState([])
     const [ recommendedProperty, setRecommendedProperty ] = React.useState([])
     const [ selectedCategoryId, setSelectedCategoryId ] = React.useState()
@@ -52,7 +62,14 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
     const [ catTaxonomies, setCatTaxonomies ] = React.useState([])
     const [ areaTaxonomies, setAreaTaxonomies ] = React.useState([])
     const [ isLoading, setIsLoading ] = React.useState(false)
-    // const [ isLoggedIn, setIsLoggedIn ] = React.useState(false)
+    const [ isSales, setIsSales ] = React.useState(false)
+    const [ isRental, setIsRental ] = React.useState(false)
+
+    React.useEffect(() => {
+        if( selectedProperties)setProperties( selectedProperties )
+        return () => setProperties([])
+    },[selectedProperties])
+
 
     // Modals
     const [showFilterModal, setShowFilterModal] = React.useState(false)
@@ -60,6 +77,7 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
 
     React.useEffect(() => {
         setIsLoading(true)
+        // console.log('Loading Taxonomy data')
         if(allTaxData) {
             if( allTaxData.action_cat ) setTypeTaxonomies( allTaxData.action_cat.filter( item => item.count > 0 ) )
             if( allTaxData.cat ) {
@@ -70,6 +88,7 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
 
             setIsLoading(false)
         }
+        // console.log('Loaded Taxonomy data')
     }, [allTaxData])
 
     React.useEffect(() => {
@@ -80,26 +99,26 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
     },[catTaxonomies])
 
     React.useEffect(() => {
-        setRecommendedProperty(allProperties.filter( i => i.recommended == 1 ))
-    },[allProperties])
+        if( properties.length ) setRecommendedProperty(properties.filter( i => i.recommended == 1 ))
+    },[properties])
 
     React.useEffect(() => {
         setTypeId(typeTaxonomies[0]?.id)
-        // if(allProperties.length) setPropertiesByType(allProperties.filter( i => i.cad_ids.includes( typeTaxonomies[0]?.id ) ))
-        if(allProperties.length) setPropertiesByType(allProperties.filter( i => i.cad_ids == typeTaxonomies[0]?.id ))
+        if(properties.length) setPropertiesByType(properties.filter( item => item.cad_ids == typeTaxonomies[0]?.id ))
+        // getPropertiesByTypeHandler( typeTaxonomies[0]?.id )
     },[typeTaxonomies])
 
     // Handler
     const getPropertiesByCategoryHandler = ( categoryId ) => {
         // Retrieve the recommended properties
-        let selectedProductsByCatID = allProperties.filter( item => item.cat_ids.includes( categoryId ) )
+        let selectedProductsByCatID = properties ? properties.filter( item => item.cat_ids.includes( categoryId ) ) : ''
         // Set the featured properties as recommended properties
         setRecommendedProperty( selectedProductsByCatID );
     }
 
     const getPropertiesByTypeHandler = ( typeId ) => {
         // Retrieve the recommended properties
-        let selectedProductsByType = allProperties.filter( item => item.cad_ids.includes( typeId ) )
+        let selectedProductsByType = properties.filter( item => item.cad_ids.includes( typeId ) )
         // Set the featured properties as recommended properties
         setPropertiesByType( selectedProductsByType );
     }
@@ -115,10 +134,28 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
         }
         else
         {
-            getPropertiesByTypeHandler( typeTaxonomies[0]?.id )
+            getPropertiesByTypeHandler( typeTaxonomies[0].id )
         }
 
     }
+
+    React.useEffect(() => {
+        (async () => {
+            try{
+                
+                const userId = await AsyncStorage.getItem("userId")
+                const list = userId ? await AsyncStorage.getItem(`favProps${userId}`) : []
+                // const list = await AsyncStorage.getItem(`favProps`)
+                if(userId) setUserId(userId)
+                if(list) setFavPropList(JSON.parse(list));
+            }
+            catch(err){
+                console.log("Profile data Async Error", err);
+                setUserId(Null);
+                setFavPropList([]);
+            }
+        })();
+    }, [])
 
     React.useEffect(() => {if(showSearchResultModal == false) setSearchResultData([])}, [showSearchResultModal])
 
@@ -127,78 +164,140 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
         return (
             <View
                 style={{
-                    flexDirection: 'row',
-                    height: 40,
-                    alignItems:"center",
-                    marginHorizontal: SIZES.padding,
                     marginVertical: SIZES.base,
-                    paddingHorizontal: SIZES.radius,
-                    borderRadius: SIZES.radius,
-                    backgroundColor: COLORS.lightGray2
+                    paddingHorizontal: SIZES.padding
                 }}
             >
-                {/* Icon */}
-                <Image
-                    source={icons.search}
+                <View
                     style={{
-                        height:20,
-                        width:20,
-                        tintColor: COLORS.black
+                        flexDirection: 'row',
+                        height: 40,
+                        alignItems:"center",
+                        marginVertical: SIZES.base,
+                        paddingHorizontal: SIZES.radius,
+                        borderRadius: SIZES.radius,
+                        backgroundColor: COLORS.lightGray2
                     }}
-                />
-
-                {/* Text Input */}
-                <TextInput
-                    ref={searchRef}
-                    style={{
-                        flex:1,
-                        marginLeft:SIZES.radius,
-                        ...FONTS.body3
-                    }}
-                    // value={searchQuery}
-                    placeholder="Search Properties"
-                    onChangeText={(value) => {
-                        // setSearchQuery(value)
-                        clearTimeout(searchQueryTimeout)
-                        searchQueryTimeout = setTimeout(() => {
-                            searchRef.current = value
-                            if(searchRef.current.length == 0) return
-                            if(allProperties)
-                            {
-                                // allProperties.forEach((item,index) => {
-                                //     if(item.address.toLowerCase().includes( value.toLowerCase() ) || item.title.toLowerCase().includes( value.toLowerCase() ))
-                                //     {
-                                //         console.log('Times', index)
-                                //         setSearchResultData([...searchResultData, item])
-                                //     }
-                                // })
-
-                                const data = allProperties.filter( item => item.address.toLowerCase().includes( value.toLowerCase() ) || item.title.toLowerCase().includes( value.toLowerCase() ) )
-                                if(data)
-                                {
-                                    setSearchResultData(data)
-                                }
-
-                                setShowSearchResultModal(true)
-                            }
-                        }, 750)
-
-                    }}
-                />
-
-                {/* Filter Button */}
-                <TouchableOpacity
-                    onPress={() => setShowFilterModal(true)}
                 >
+                    {/* Icon */}
                     <Image
-                        source={icons.filter}
+                        source={icons.search}
                         style={{
-                            height: 20,
+                            height:20,
                             width:20,
                             tintColor: COLORS.black
                         }}
                     />
-                </TouchableOpacity>
+
+                    {/* Text Input */}
+                    <TextInput
+                        ref={searchRef}
+                        style={{
+                            flex:1,
+                            marginLeft:SIZES.radius,
+                            ...FONTS.body3
+                        }}
+                        // value={searchQuery}
+                        placeholder="Search Properties"
+                        onChangeText={(value) => {
+                            // setSearchQuery(value)
+                            clearTimeout(searchQueryTimeout)
+                            searchQueryTimeout = setTimeout(() => {
+                                let data = []
+                                searchRef.current = value
+                                if(searchRef.current.length == 0) return
+                                if(properties)
+                                {
+                                    // console.log(searchModelRef.current)
+                                    const type = isSales ? 'Sales' : (isRental ? 'Rentals': '');
+                                    if(type != ''){
+                                        data = properties.filter( item => item.cad_names.includes( type ) && ( item.address.toLowerCase().includes( value.toLowerCase() ) || item.title.toLowerCase().includes( value.toLowerCase() ) ))
+                                    }
+                                    else {
+                                        data = properties.filter( item => item.address.toLowerCase().includes( value.toLowerCase() ) || item.title.toLowerCase().includes( value.toLowerCase() ) )
+                                    }
+                                    if(data)
+                                    {
+                                        setSearchResultData(data)
+                                    }
+                                    setSearchQuery(value)
+                                    setShowSearchResultModal(true)
+                                }
+                            }, 750)
+
+                        }}
+                    />
+
+                    {/* Filter Button */}
+                    <TouchableOpacity
+                        onPress={() => {
+                            searchRef.current = ''
+                            setSearchQuery('')
+                            setShowFilterModal(true)
+                        }}
+                    >
+                        <Image
+                            source={icons.filter}
+                            style={{
+                                height: 20,
+                                width:20,
+                                tintColor: COLORS.black
+                            }}
+                        />
+                    </TouchableOpacity>
+
+                </View>
+
+                <View
+                    style={{
+                        // flex:1,
+                        flexDirection:"row",
+                        justifyContent:'space-between',
+                        alignItems:"center",
+                        height:40,
+                        // borderBottomWidth:1,
+                        // borderBottomColor:COLORS.lightGray,
+                        paddingBottom:10
+                    }}
+                >
+                    <View
+                        style={{
+                            flexDirection:"row",
+                            justifyContent:'flex-start',
+                            alignItems:"center",
+                        }}
+                    >
+                        <Switch
+                            trackColor={{ false: COLORS.gray3, true: COLORS.primary }}
+                            thumbColor={isSales ? COLORS.primary : "#f4f3f4"} // "#81b0ff"
+                            onValueChange={ val => {
+                                setIsRental(!val)
+                                setIsSales(val)
+                            }}
+                            value={isSales}
+                        />
+                        <Text style={{color:isSales ? COLORS.primary : COLORS.gray,...FONTS.body3}}>Sales</Text>
+                    </View>
+
+                    <View
+                        style={{
+                            flexDirection:"row",
+                            justifyContent:'flex-end',
+                            alignItems:"center",
+                        }}
+                    >
+                        <Switch
+                            trackColor={{ false: COLORS.gray3, true: COLORS.primary }}
+                            thumbColor={isRental ? COLORS.primary : "#f4f3f4"} // "#81b0ff"
+                            onValueChange={ val => {
+                                setIsSales(!val)
+                                setIsRental(val)
+                            }}
+                            value={isRental}
+                        />
+                        <Text style={{color:isRental ? COLORS.primary : COLORS.gray,...FONTS.body3}}>Rental</Text>
+                    </View>
+                </View>
 
             </View>
         )
@@ -237,7 +336,18 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
                 </Text>
             </View>
 
-                <TouchableOpacity
+                <UserLocation
+                    containerStyle={{
+                        flexDirection: 'row',
+                        marginTop:SIZES.base,
+                        alignItems: "center"
+                    }}
+                    labelStyle={{
+                        ...FONTS.h3
+                    }}
+                />
+
+                {/* <TouchableOpacity
                     style={{
                         flexDirection: 'row',
                         marginTop:SIZES.base,
@@ -262,7 +372,7 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
                             tintColor: COLORS.primary
                         }}
                     />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
             </View>
         )
@@ -350,22 +460,6 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
         )
     }
 
-    // React.useEffect(() => {
-    //     setIsLoading(true)
-    //     if(allProperties.length == 0)
-    //     {
-    //         // console.log("___________________________NO DATA!!!")
-    //         setIsLoading(false)
-    //     }
-    //     else{
-    //         // console.log("___________________________HAVE DATA!!!")
-    //         setIsLoading(false)
-    //     }
-    //     // return () => setIsLoading(false)
-    // }, [])
-
-    // console.log("___LOADING___",isLoading)
-
     return (
 
         <View
@@ -380,7 +474,8 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
             {/* Modal */}
             {showFilterModal &&
                 <FilterModal
-                    data={allProperties}
+                    refEle={searchRef}
+                    data={properties}
                     isVisible={showFilterModal}
                     catList={catTaxonomies}
                     typeList={typeTaxonomies}
@@ -392,11 +487,12 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
             }
             {showSearchResultModal &&
                 <SearchModal
+                    refEle={searchRef}
                     navigation={navigation}
                     isVisible={showSearchResultModal}
                     searchResultData={ searchResultData }
-                    query={ typeof searchRef.current !== 'object' ? searchRef.current : ''}
-                    // query={searchRef.current}
+                    // query={ typeof searchRef.current !== 'object' ? searchRef.current : ''}
+                    query={searchQuery}
                     onClose={() => setShowSearchResultModal(false)}
                 />
             }
@@ -412,7 +508,6 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
                     :
                     //List
                     <FlatList
-                        // data={allProperties}
                         data={propertiesByType}
                         keyExtractor={item => `${item.id}`}
                         showsVerticalScrollIndicator={false}
@@ -468,9 +563,9 @@ const Home = ( { navigation, allProperties, setAllCats } ) => {
 }
 
 function mapStateToProps( state ) {
-
+    // console.log(state.userReducer)
     return {
-        // selectedProperties: state?.propertyReducer?.allProperties,
+        selectedProperties: state?.propertyReducer?.allProperties,
         selectedCats: state?.propertyReducer?.allCategories,
         // selectedPopular: state?.propertyReducer?.popular,
         // selectedRecommended: state?.propertyReducer?.recommended,
@@ -479,7 +574,7 @@ function mapStateToProps( state ) {
 
 function mapDispatchToProps( dispatch ) {
     return {
-        // setAllProperties: selectedProperties => dispatch( getAllProperties( selectedProperties ) ),
+        setAllProperties: selectedProperties => dispatch( getAllProperties( selectedProperties ) ),
         setAllCats: selectedCats => dispatch( getAllCats( selectedCats ) ),
         // setPopularList: selectedPopular => dispatch( getPopularProp( selectedPopular ) ),
         // setRecommendedList: selectedRecommended => dispatch( getRecommendedProp( selectedRecommended ) ),

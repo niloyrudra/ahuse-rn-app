@@ -4,6 +4,7 @@ import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native'
 // Constants
 import constants from '../constants/constants';
 import icons from '../constants/icons';
+import images from '../constants/images'
 
 import { COLORS ,FONTS ,SIZES } from '../constants/theme';
 import utils from '../utils/Utils';
@@ -24,8 +25,8 @@ const HorizontalCard = ( { containerStyle, item, imageStyle, onPress } ) => {
         >
             {/* Image */}
             <Image
-                source={{uri:item.thumbnail}}
-                style={imageStyle}
+                source={item.thumbnail ? {uri:item.thumbnail} : images.cardBanner}
+                style={item.thumbnail ? imageStyle : {...imageStyle, tintColor:COLORS.gray3} }
             />
 
             {/* Info */}

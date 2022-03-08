@@ -16,12 +16,13 @@ import CustomDrawerItem from '../components/CustomDrawerItem'
 
 // Components
 import PropertyDetail from '../screens/Property/PropertyDetail'
-import Cart from '../screens/Cart/Cart'
-import Checkout from '../screens/Checkout/Checkout'
-import MyCards from '../screens/Cards/MyCards'
-import AddNewCard from '../screens/Cards/AddNewCard'
-import Success from '../screens/Checkout/Success'
+// import Cart from '../screens/Cart/Cart'
+// import Checkout from '../screens/Checkout/Checkout'
+// import MyCards from '../screens/Cards/MyCards'
+// import AddNewCard from '../screens/Cards/AddNewCard'
+// import Success from '../screens/Checkout/Success'
 import MapScreen from '../screens/Map/MapScreen'
+import SingleMapScreen from '../screens/Map/SingleMapScreen';
 ///
 // Redux
 import { connect } from 'react-redux'
@@ -31,23 +32,42 @@ import { userSignOutAction } from '../store/user/userActions'
 
 const Drawer = createDrawerNavigator()
 
-const CustomDrawerContent = ({ navigation, selectedTab, setSelectedTab }) => {
+// const hasToken = async () => {
+//     const token = await AsyncStorage.getItem("token")
+//     return token ? true : false
+// }
 
+const CustomDrawerContent = ({ navigation, route, selectedTab, selectedToken, setSelectedTab }) => {
+    // console.log(route)
+    
     const dispatch = useDispatch()
     const [ isLoggedIn, setIsLoggedIn ] = React.useState(false)
 
+    // console.log(selectedToken)
 
     React.useEffect(() => {
         (async () => {
             const hasToken = await AsyncStorage.getItem("token")
-            if( hasToken ) setIsLoggedIn(true)
+            if( hasToken ) {
+                setIsLoggedIn(true)
+            }
+            else {
+                setIsLoggedIn(false)
+            }
         })()
         return () => {
             setIsLoggedIn(false)
         }
     }, [])
-    
 
+    React.useEffect(() => {
+        if(selectedToken) console.log(selectedToken)
+        return () => {
+            setIsLoggedIn(false)
+        }
+    }, [selectedToken])
+    
+    // console.log("drawer--",hasToken())
 
     return (
         <DrawerContentScrollView
@@ -211,7 +231,7 @@ const CustomDrawerContent = ({ navigation, selectedTab, setSelectedTab }) => {
                                 setIsLoggedIn(false)
                                 navigation.closeDrawer()
                                 console.log("logged out")
-                                // navigation.navigate("SignIn")
+                                navigation.navigate("Auth")
                             }}
                         />
                         :
@@ -220,7 +240,7 @@ const CustomDrawerContent = ({ navigation, selectedTab, setSelectedTab }) => {
                             icon={icons.login}
                             onPress={() => {
                                 navigation.closeDrawer()
-                                navigation.navigate("SignIn")
+                                navigation.navigate("Auth")
                             }}
                         />
                     }
@@ -234,7 +254,6 @@ const CustomDrawerContent = ({ navigation, selectedTab, setSelectedTab }) => {
 }
 
 const DrawerNavigator = ( { selectedTab, setSelectedTab } ) => {
-
     return (
         <View
             style={{
@@ -276,21 +295,21 @@ const DrawerNavigator = ( { selectedTab, setSelectedTab } ) => {
                     {(props) => <PropertyDetail {...props} />}
                 </Drawer.Screen>
                 
-                <Drawer.Screen name="Cart">
+                {/* <Drawer.Screen name="Cart">
                     {(props) => <Cart {...props} />}
-                </Drawer.Screen>
+                </Drawer.Screen> */}
 
-                <Drawer.Screen name="MyCards">
+                {/* <Drawer.Screen name="MyCards">
                     {(props) => <MyCards {...props} />}
                 </Drawer.Screen>
 
                 <Drawer.Screen name="AddCard">
                     {(props) => <AddNewCard {...props} />}
-                </Drawer.Screen>
+                </Drawer.Screen> */}
                                 
-                <Drawer.Screen name="Checkout">
+                {/* <Drawer.Screen name="Checkout">
                     {(props) => <Checkout {...props} />}
-                </Drawer.Screen>
+                </Drawer.Screen> */}
                                 
                 <Drawer.Screen name="Success">
                     {(props) => <Success {...props} options={{
@@ -303,6 +322,11 @@ const DrawerNavigator = ( { selectedTab, setSelectedTab } ) => {
                         gestureEnabled:false
                     }} />}
                 </Drawer.Screen>
+                <Drawer.Screen name="SingleMap">
+                    {(props) => <SingleMapScreen {...props} options={{
+                        gestureEnabled:false
+                    }} />}
+                </Drawer.Screen>
                 {/* <Drawer.Screen name="Success" component={Success} options={{
                         gestureEnabled:false
                     }} /> */}
@@ -312,18 +336,18 @@ const DrawerNavigator = ( { selectedTab, setSelectedTab } ) => {
     )
 }
 
-// export default DrawerNavigator
-
 function mapStateToProps( state ) {
-    // console.log(state.userReducer)
+    // console.log(state?.userReducer)
     return {
-        selectedTab: state?.tabReducer?.selectedTab?.tabPayload
+        selectedTab: state?.tabReducer?.selectedTab?.tabPayload,
+        selectedToken: state?.userReducer?.token,
     }
 }
 
 function mapDispatchToProps( dispatch ) {
      return {
          setSelectedTab: selectedTab => dispatch( setSelectedTab(selectedTab) )
+        //  setSelectedTab: selectedTab => dispatch( setSelectedTab(selectedTab) )
      }
 }
 

@@ -91,13 +91,15 @@ const OnBoarding = ({navigation, route, }) => {
             >
                 <Image
                     // source={images.logo_02}
-                    source={images.logo_00}
+                    // source={images.logo_00}
+                    source={images.logo_01}
                     resizeMode='contain'
                     style={{
-                        width: SIZES.width * 0.5,
-                        height:100
+                        width: SIZES.width*0.55,
+                        // height:100,
                         // width: SIZES.width * 0.35,
-                        // height:80
+                        height:80,
+                        tintColor:COLORS.blue
                     }}
                 />
             </View>

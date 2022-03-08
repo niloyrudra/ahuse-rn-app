@@ -4,7 +4,7 @@ import constants from '../constants/constants';
 
 // Constants
 import icons from '../constants/icons';
-
+import images from '../constants/images'
 import { COLORS ,FONTS ,SIZES } from '../constants/theme';
 import utils from '../utils/Utils';
 
@@ -54,8 +54,8 @@ const VerticalCard = ( { containerStyle, item, imageStyle, onPress } ) => {
 
             {/* Image */}
             <Image
-                source={{uri:item.thumbnail}}
-                style={imageStyle}
+                source={item.thumbnail ? {uri:item.thumbnail} : images.cardBanner}
+                style={item.thumbnail ? imageStyle : {...imageStyle, tintColor:COLORS.gray3} }
             />
 
             {/* Info */}

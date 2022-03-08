@@ -17,7 +17,7 @@ const TextButton = ( { label, disabled, labelStyle, buttonContainerStyle, label2
             <Text
                 style={{
                     color:COLORS.white,
-                    ...FONTS.h3,
+                    ...FONTS.h2,
                     ...labelStyle
                 }}
             >
@@ -31,7 +31,7 @@ const TextButton = ( { label, disabled, labelStyle, buttonContainerStyle, label2
                         flex:1,
                         textAlign:"right",
                         color:COLORS.white,
-                        ...FONTS.h3,
+                        ...FONTS.h2,
                         ...label2Style
                     }}
                 >

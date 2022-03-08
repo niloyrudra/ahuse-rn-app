@@ -7,28 +7,17 @@ import OnBoarding from '../screens/OnBoarding/OnBoarding'
 import SignIn from '../screens/Authentication/SignIn'
 import SignUp from '../screens/Authentication/SignUp'
 import ForgotPassword from '../screens/Authentication/ForgotPassword'
-import Otp from '../screens/Authentication/Otp'
+// import Otp from '../screens/Authentication/Otp'
 
 const Stack = createStackNavigator();
 
-const OnBoardingStackNavigator = () => {
-    
-    // React.useEffect(() => {
-    //     SplashScreen.hide();
-    // }, [])
-
+const AuthStackNavigator = () => {
     return (
         <Stack.Navigator
             screenOptions={{
-                headerShown: false
+                headerShown:false
             }}
-            initialRouteName={'Boarding'}
         >
-            <Stack.Screen
-                name="Boarding"
-                component={OnBoarding}
-            />
-
             <Stack.Screen
                 name="SignIn"
                 component={SignIn}
@@ -43,13 +32,9 @@ const OnBoardingStackNavigator = () => {
                 name="ForgotPassword"
                 component={ForgotPassword}
             />
-
-            <Stack.Screen
-                name="Otp"
-                component={Otp}
-            />
         </Stack.Navigator>
     )
 }
 
-export default OnBoardingStackNavigator
+export default AuthStackNavigator
+

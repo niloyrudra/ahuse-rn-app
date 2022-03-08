@@ -54,7 +54,7 @@ const SignIn = ({ navigation, route }) => {
             password,
             saveMe
         };
-        dispatch( userSignInAction( userData ) )
+        dispatch( userSignInAction( userData, setIsLoading ) )
         setUsername('')
         setPassword('')
         setUsernameError('')
@@ -74,8 +74,8 @@ const SignIn = ({ navigation, route }) => {
         if(selectLoggedInUser)
         {
             // navigation.replace("MainLayout")
-            // navigation.replace("Home")
-            navigation.navigate("Home")  
+            navigation.replace("Home", {isLoggedIn: selectLoggedInUser})
+            // navigation.navigate("MainLayout")  
         }
 
         return () => {
@@ -87,7 +87,7 @@ const SignIn = ({ navigation, route }) => {
         }
     }, [selectLoggedInUser])
 
-    console.log("SIGNIN SCREEN isLoading state - ", isLoading)
+    // console.log("SIGNIN SCREEN isLoading state - ", isLoading)
 
     return (
         <AuthLayout

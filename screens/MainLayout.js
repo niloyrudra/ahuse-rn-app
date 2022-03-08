@@ -1,9 +1,7 @@
 import React, { useRef } from 'react';
 import {
     View,
-    Text,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     Image,
     FlatList
 } from 'react-native';
@@ -26,12 +24,8 @@ import TabButton from '../components/TabButton';
 // Screens
 // Home
 import Home from "../screens/Home/Home"
-// Property Detail
-// import PropertyDetail from './property/PropertyDetail';
 // Search
 import Search from "../screens/Search/Search";
-// Cart
-// import CartTab from "../screens/Cart/CartTab"
 // Add Property
 import AddProperty from '../screens/Property/AddProperty';
 // Favourite
@@ -43,15 +37,16 @@ import Notification from "../screens/Notification/Notification"
 import constants from '../constants/constants';
 import icons from '../constants/icons';
 import images from '../constants/images';
-import { COLORS ,FONTS ,SIZES } from '../constants/theme';
-// import TopProfileButton from '../components/TopProfileButton';
+import { COLORS, SIZES } from '../constants/theme';
 import Profile from './User/Profile';
-import CartQuantityButton from '../components/CartQuantityButton';
 
-const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties, setSelectedTab, setAllProperties, setAllCats, setPopularList, setRecommendedList } ) => {
 
-    const [ properties, setProperties ] = React.useState(selectedProperties)
-    const [ categories, setCategories ] = React.useState([])
+const MainLayout = ( {navigation, selectedTab, setSelectedTab } ) => {
+
+    const progress = useDrawerProgress()
+    const flatListRef = useRef()
+
+    const selectedToken = useSelector( state => state.userReducer.token )
     const [ isLoggedIn, setIsLoggedIn ] = React.useState(false)
 
     // AXIOS CALLING
@@ -65,33 +60,20 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
     );
 
     React.useEffect(() => {
-        if( !error && data) {
-            setAllCats( data )
-            setCategories( data )
+        // let controller = new AbortController();
+        let isMounted = true;
+        if(isMounted){
+            if(selectedToken) {
+                setIsLoggedIn(true)
+            }
         }
-        // return () => setAllCats([])
-    },[data]);
-
-    React.useEffect(() => {
-        if( selectedProperties){
-            // Retrieve the recommended properties
-            let popular = selectedProperties.filter( item => item.recommend == 1 )
-            // Set the featured properties as recommended properties
-            setPopularList( popular );
-            // Retrieve the recommended properties
-            let recommends = selectedProperties.filter( item => item.recommend == 1 )
-            // Set the featured properties as recommended properties
-            setRecommendedList( recommends );
-
-            setProperties( selectedProperties )
+        return () => {
+            isMounted= false;
+            setIsLoggedIn(false)
         }
-        // return () => setAllProperties([])
-    },[selectedProperties])
+    }, [selectedToken])
 
-    const progress = useDrawerProgress()
-
-    const flatListRef = useRef()
-
+    // ReAnimated InterPlateNode Properties
     const scale = Animated.interpolateNode( progress, {
         inputRange: [0 ,1],
         outputRange: [1, 0.8]
@@ -113,9 +95,6 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
 
     const addPropTabFlex = useSharedValue(1)
     const addPropTabColor = useSharedValue( COLORS.white )
-
-    // const cartTabFlex = useSharedValue(1)
-    // const cartTabColor = useSharedValue( COLORS.white )
 
     const favouriteTabFlex = useSharedValue(1)
     const favouriteTabColor = useSharedValue( COLORS.white )
@@ -160,17 +139,6 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
         }
     } )
 
-    // const cartFlexStyle = useAnimatedStyle( () => {
-    //     return {
-    //         flex: cartTabFlex.value
-    //     }
-    // } )
-    // const cartColorStyle = useAnimatedStyle( () => {
-    //     return {
-    //         backgroundColor: cartTabColor.value
-    //     }
-    // } )
-
     const favouriteFlexStyle = useAnimatedStyle( () => {
         return {
             flex: favouriteTabFlex.value
@@ -205,7 +173,28 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
     } )
 
     React.useEffect(() => {
+        let mounted = true;
         setSelectedTab( constants.screens.home )
+        if(!isLoggedIn) {
+            (async () => {
+                try{
+                    const token = await AsyncStorage.getItem('token')
+                    if(token){
+                        console.log(token)
+                        if( mounted ) setIsLoggedIn(true)
+                    }
+                    else{
+                        if( mounted ) setIsLoggedIn(false)
+                    }
+                }
+                catch(err){
+                    setIsLoggedIn(false)
+                }
+            })()
+        }
+        return () => {
+            mounted = false
+        }
     }, [])
 
     React.useEffect(() => {
@@ -215,7 +204,7 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
                 index:0,
                 animated:false
             })
-            homeTabFlex.value = withTiming(4, { duration: 500 })
+            homeTabFlex.value = withTiming(1, { duration: 500 })
             homeTabColor.value = withTiming( COLORS.primary, { duration: 500 } )
         }else {
             homeTabFlex.value = withTiming(1, { duration: 500 })
@@ -228,7 +217,7 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
                 index:1,
                 animated:false
             })
-            searchTabFlex.value = withTiming(4, { duration: 500 })
+            searchTabFlex.value = withTiming(1, { duration: 500 })
             searchTabColor.value = withTiming( COLORS.primary, { duration: 500 } )
         }else {
             searchTabFlex.value = withTiming(1, { duration: 500 })
@@ -242,25 +231,12 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
                 index:2,
                 animated:false
             })
-            addPropTabFlex.value = withTiming(4, { duration: 500 })
+            addPropTabFlex.value = withTiming(1, { duration: 500 })
             addPropTabColor.value = withTiming( COLORS.primary, { duration: 500 } )
         }else {
             addPropTabFlex.value = withTiming(1, { duration: 500 })
             addPropTabColor.value = withTiming( COLORS.white, { duration: 500 } )
         }
-
-        // if(selectedTab == constants.screens.cart)
-        // {
-        //     flatListRef?.current?.scrollToIndex({
-        //         index:2,
-        //         animated:false
-        //     })
-        //     cartTabFlex.value = withTiming(4, { duration: 500 })
-        //     cartTabColor.value = withTiming( COLORS.primary, { duration: 500 } )
-        // }else {
-        //     cartTabFlex.value = withTiming(1, { duration: 500 })
-        //     cartTabColor.value = withTiming( COLORS.white, { duration: 500 } )
-        // }
 
         if(selectedTab == constants.screens.favourite)
         {
@@ -269,7 +245,7 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
                 index:3,
                 animated:false
             })
-            favouriteTabFlex.value = withTiming(4, { duration: 500 })
+            favouriteTabFlex.value = withTiming(1, { duration: 500 })
             favouriteTabColor.value = withTiming( COLORS.primary, { duration: 500 } )
         }else {
             favouriteTabFlex.value = withTiming(1, { duration: 500 })
@@ -283,7 +259,7 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
                 index:4,
                 animated:false
             })
-            notificationTabFlex.value = withTiming(4, { duration: 500 })
+            notificationTabFlex.value = withTiming(1, { duration: 500 })
             notificationTabColor.value = withTiming( COLORS.primary, { duration: 500 } )
         }else {
             notificationTabFlex.value = withTiming(1, { duration: 500 })
@@ -296,49 +272,14 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
                 index:5,
                 animated:false
             })
-            profileTabFlex.value = withTiming(4, { duration: 500 })
+            profileTabFlex.value = withTiming(1, { duration: 500 })
             profileTabColor.value = withTiming( COLORS.primary, { duration: 500 } )
         }else {
             profileTabFlex.value = withTiming(1, { duration: 500 })
             profileTabColor.value = withTiming( COLORS.white, { duration: 500 } )
         }
         
-    }, [selectedTab])
-
-
-
-    const selectedToken = useSelector( state => state.userReducer.token )
-
-    React.useEffect(() => {
-        if(selectedToken) {
-            setIsLoggedIn(true)
-        }
-        return () => {
-            setIsLoggedIn(false)
-        }
-    }, [selectedToken])
-
-    React.useEffect(() => {
-        if(!isLoggedIn) {
-            (async () => {
-                try{
-                    const token = await AsyncStorage.getItem('token')
-                    if(token){
-                        setIsLoggedIn(true)
-                    }
-                    else{
-                        setIsLoggedIn(false)
-                    }
-                }
-                catch(err){
-                    setIsLoggedIn(false)
-                }
-            })()
-        }
-        return () => {
-            setIsLoggedIn(false)
-        }
-    }, [])
+    }, [selectedTab]);
 
     return (
         <Animated.View
@@ -356,7 +297,30 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
                     marginTop: 40,
                     alignItems: 'center'
                 }}
-                title={selectedTab?.toUpperCase()}
+                title={selectedTab == 'Home' ? 
+                <View
+                    style={{
+                        flex:1,
+                        justifyContent:"center",
+                        alignItems:"center",
+                        height:50
+                    }}
+                >
+                    <Image
+                        source={images.logo_01}
+                        resizeMode='contain'
+                        style={{
+                            // width: 100,
+                            // height:100,
+                            // width: SIZES.width * 0.4,
+                            height:'100%',
+                            tintColor:COLORS.primary,
+                            // marginTop:20
+                            justifyContent:"flex-end"
+                        }}
+                    />
+                </View>
+                 : selectedTab?.toUpperCase()}
                 leftComponent={
                     <TouchableOpacity
                         style={{
@@ -376,15 +340,16 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
                     </TouchableOpacity>
                 }
                 rightComponent={
+                    <View style={{flex:0}} />
                     // <TopProfileButton navigation={navigation} />
-                    <CartQuantityButton
+                    // <CartQuantityButton
                         // navigation={navigation}
                         // containerStyle={{}}
                         // iconStyle={{}}
                         // quantity={quantity}
-                        icons={icons.cart}
-                        onPress={() => navigation.navigate("Cart")}
-                    />
+                        // icons={icons.cart}
+                        // onPress={() => navigation.navigate("Cart")}
+                    // />
                 }
             />
 
@@ -402,7 +367,12 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
                     snapToAlignment="center"
                     snapToInterval={SIZES.width}
                     showsHorizontalScrollIndicator={false}
-
+                    onScrollToIndexFailed={info => {
+                        const wait = new Promise(resolve => setTimeout(resolve, 500));
+                        wait.then(() => {
+                            flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
+                        });
+                    }}
                     data={constants.bottom_tabs}
                     keyExtractor={(item) => `${item.id}`}
                     renderItem={( { item, idex } ) => {
@@ -413,7 +383,8 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
                                     width: SIZES.width
                                 }}
                             >
-                                {item.label == constants.screens.home && <Home navigation={navigation} allProperties={properties} categories={categories} />}
+                                {/* {item.label == constants.screens.home && <Home navigation={navigation} allProperties={properties} categories={categories} />} */}
+                                {item.label == constants.screens.home && <Home navigation={navigation} />}
                                 {item.label == constants.screens.search && <Search navigation={navigation} />}
                                 {/* {item.label == constants.screens.cart && <CartTab navigation={navigation} />} */}
                                 {item.label == constants.screens.addProp && <AddProperty navigation={navigation} />}
@@ -461,7 +432,7 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
                         flex:1,
                         flexDirection: "row",
                         paddingHorizontal: SIZES.radius,
-                        paddingBottom:10,
+                        paddingBottom:5,
                         borderTopLeftRadius:20,
                         borderTopRightRadius:20,
                         // backgroundColor: COLORS.white
@@ -485,15 +456,6 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
                         innerContainerStyles={searchColorStyle}
                         onPress={() => setSelectedTab( constants.screens.search )}
                     />
-                    {/* Cart Tab */}
-                    {/* <TabButton
-                        label={constants.screens.cart}
-                        icon={icons.cart}
-                        isFocused={selectedTab == constants.screens.cart}
-                        outerContainerStyles={cartFlexStyle}
-                        innerContainerStyles={cartColorStyle}
-                        onPress={() => setSelectedTab( constants.screens.cart )}
-                    /> */}
                     {/* Add Property Tab */}
                     <TabButton
                         label={constants.screens.addProp}
@@ -544,22 +506,14 @@ const MainLayout = ( {navigation, selectedTab, selectedCats, selectedProperties,
 function mapStateToProps( state ) {
 
     return {
-        selectedTab: state?.tabReducer?.selectedTab?.tabPayload,
-        selectedProperties: state?.propertyReducer?.allProperties,
-        selectedCats: state?.propertyReducer?.allCategories,
-        selectedPopular: state?.propertyReducer?.popular,
-        selectedRecommended: state?.propertyReducer?.recommended,
+        selectedTab: state?.tabReducer?.selectedTab?.tabPayload
     }
 }
 
 function mapDispatchToProps( dispatch ) {
     return {
-        setSelectedTab: selectedTab => dispatch( setSelectedTab(selectedTab) ),
-        setAllProperties: selectedProperties => dispatch( getAllProperties( selectedProperties ) ),
-        setAllCats: selectedCats => dispatch( getAllCats( selectedCats ) ),
-        setPopularList: selectedPopular => dispatch( getPopularProp( selectedPopular ) ),
-        setRecommendedList: selectedRecommended => dispatch( getRecommendedProp( selectedRecommended ) ),
+        setSelectedTab: selectedTab => dispatch( setSelectedTab(selectedTab) )
     }
 }
 
-export default connect( mapStateToProps, mapDispatchToProps ) ( MainLayout )
+export default connect( mapStateToProps, mapDispatchToProps )( MainLayout )

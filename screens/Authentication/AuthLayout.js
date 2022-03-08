@@ -30,12 +30,24 @@ const AuthLayout = ({ title, subtitle, titleContainerStyle, children }) => {
                         alignItems:"center"
                     }}
                 >
-                    <Image
+                    {/* <Image
                         source={images.logo_00}
                         resizeMode='contain'
                         style={{
                             height:100,
                             width:200
+                        }}
+                    /> */}
+                    <Image
+                        source={images.logo_01}
+                        resizeMode='contain'
+                        style={{
+                            // width: 100,
+                            // height:100,
+                            width: SIZES.width * 0.5,
+                            height:100,
+                            tintColor:COLORS.primary,
+                            marginTop:16
                         }}
                     />
                 </View>

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text, View, Switch } from 'react-native'
+import { Text, View, Switch, Alert } from 'react-native'
 import { Controller } from 'react-hook-form';
 import { COLORS } from '../constants/theme';
 
@@ -11,8 +11,6 @@ const SwitchButtonComponent = ( props ) => {
         <View style={{
             flex:1,
             flexDirection:"row",
-            // borderTopColor: COLORS.gray2,
-            // borderTopWidth:1,
             justifyContent:"space-between",
             alignItems:"center"
         }}>
@@ -27,7 +25,27 @@ const SwitchButtonComponent = ( props ) => {
                         trackColor={{ false: COLORS.gray3, true: COLORS.primary }}
                         thumbColor={value ? COLORS.primary : "#f4f3f4"} // "#81b0ff"
                         // ios_backgroundColor="#3e3e3e"
-                        onValueChange={ val => onChange(val)}
+                        onValueChange={ val => {
+                            onChange(val);
+                            if(val){
+                                Alert.alert(
+                                    "Please! Pay Your Attention!",
+                                    "You will be charged `ONE pound` if you want your ad to be featured! Will you proceed or not?",
+                                    [
+                                        {
+                                            text: "Proceed",
+                                            onPress: () => console.log("proceed"),
+                                            style: "Ok"
+                                        },
+                                        {
+                                            text: "Cancel",
+                                            onPress: () => console.log("Cancel Pressed"),
+                                            style: "cancel"
+                                        }
+                                    ]
+                                );
+                            }
+                        }}
                         value={value}
                     />
                 )}

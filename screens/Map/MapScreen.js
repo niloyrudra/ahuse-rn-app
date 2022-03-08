@@ -1,15 +1,18 @@
 import React from 'react'
-import { StyleSheet, Text, View, Image, Dimensions } from 'react-native'
-import { useDrawerProgress } from '@react-navigation/drawer';
-import Animated from 'react-native-reanimated';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Dimensions, FlatList } from 'react-native'
+// import { useDrawerProgress } from '@react-navigation/drawer';
+// import Animated from 'react-native-reanimated';
+import { useSelector } from 'react-redux';
 // import MapView, { PROVIDER_GOOGLE, Marker,  AnimatedRegion, Animated, MarkerAnimated } from 'react-native-maps'
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps'
 
-import { COLORS, SIZES, FONTS } from '../../constants/theme'
+import { COLORS, SIZES, FONTS, BOXSHADOW } from '../../constants/theme'
 import icons from '../../constants/icons';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+ import VerticalCard from '../../components/VerticalCard';
 
 const MapScreen = ( { navigation, route } ) => {
+
+    const selectedProperties = useSelector( state => state.propertyReducer.allProperties )
 
     const [properties, setProperties] = React.useState([])
     const [region, setRegion] = React.useState({
@@ -18,49 +21,24 @@ const MapScreen = ( { navigation, route } ) => {
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
       })
-    const [coordinate, setCoordinate] = React.useState({
-        latitude: 37.78825,
-        longitude: -122.4324,
-    })
 
     React.useEffect(() => {
-        if(route?.params?.items)
-        {
-            setProperties(route.params.items)
-            console.log(route.params.items.length)
+
+        if(selectedProperties) {
+            setProperties(selectedProperties)
+            setRegion({
+                latitude: parseFloat(selectedProperties[0].latitude), // 37.78825
+                longitude: parseFloat(selectedProperties[0].longitude), // -122.4324
+                latitudeDelta: 1.4,
+                longitudeDelta: 1.4,
+            })
         }
+
         return () => {
             setProperties([])
+            setRegion({})
         }
-    }, [])
-
-
-    // const [coordinate, setCoordinate] = React.useState( new AnimatedRegion({
-    //     latitude: 37.78825,
-    //     longitude: -122.4324,
-    //   }))
-
-    const progress = useDrawerProgress()
-    const scale = Animated.interpolateNode( progress, {
-        inputRange: [0 ,1],
-        outputRange: [1, 0.8]
-    } )
-    const borderRadius = Animated.interpolateNode( progress, {
-        inputRange: [0 ,1],
-        outputRange: [0, 26]
-    } )
-    const animatedStyle = { borderRadius, transform: [{scale}] }
-
-    // React.useEffect(() => {
-    //     if( route.params ) {
-    //         setRegion({
-    //             latitude: parseFloat(property.latitude), // 37.78825
-    //             longitude: parseFloat(property.longitude), // -122.4324
-    //             latitudeDelta: 0.0922,
-    //             longitudeDelta: 0.0421,
-    //         })
-    //     }
-    // }, [])
+    }, [selectedProperties])
 
     // Handler
     const onRegionChangeHandler = ( region ) => {
@@ -69,62 +47,124 @@ const MapScreen = ( { navigation, route } ) => {
     }
 
     return (
-        <Animated.View
+        <View
             style={{
                 flex: 1,
                     backgroundColor: COLORS.white,
                     // position:"relative",
-                    ...animatedStyle
+                    // ...animatedStyle
             }}
         >
-                <MapView
-                    // mapType={Platform.OS == "android" ? "none" : "standard"}
-                    region={region}
-                    // initialRegion={region}
-                    provider={PROVIDER_GOOGLE}
-                    // customMapStyle={mapStyle}
-                    showsUserLocation={true}
-                    zoomEnabled={true}
-                    showsCompass={true}
-                    showsScale={true}
-                    cacheEnabled={true}
-                    loadingEnabled={true}
-                    // onRegionChange={onRegionChangeHandler}
+
+            <View
+                style={{
+                    position:"absolute",
+                    top:SIZES.padding,
+                    left:SIZES.padding,
+                    zIndex:999
+                }}
+            >
+                <TouchableOpacity
                     style={{
-                        width: Dimensions.get("window").width,
-                        height: Dimensions.get("window").height,
+                        width:40,
+                        height:40,
+                        justifyContent:"center",
+                        alignItems: "center",
+                        borderWidth: 1,
+                        borderColor: COLORS.gray2,
+                        borderRadius: SIZES.radius,
+                        backgroundColor:COLORS.white
                     }}
+                    onPress={() => navigation.goBack()}
                 >
-                    {properties &&
-                        properties.map( (item,index)  => (
-                            <MapView.Marker
-                                key={`${item.id}`}
-                                title={item?.title}
-                                description={item?.address}
-                                // coordinate={coordinate}
-                                coordinate={{"latitude":parseFloat(item?.latitude),"longitude":parseFloat(item?.longitude)}}
-                            >
-                                <View
-                                    style={{
-                                        width:30,
-                                        height:30
-                                    }}
-                                >
+                    <Image
+                        source={icons.back}
+                        style={{
+                            width:20,
+                            height:20,
+                            tintColor:COLORS.gray2
+                        }}
+                    />
+                </TouchableOpacity>
+            </View>
 
-                                    <Image
-                                        source={icons.locationPin}
-                                        style={{
-                                            width:"100%",
-                                            height:"100%"
-                                        }}
-                                    />
-                                </View>
-                            </MapView.Marker>
-                        ))
-                    }
+            <View
+                style={{
+                    position:"absolute",
+                    bottom:0,
+                    // left:SIZES.padding,
+                    // ...BOXSHADOW,
+                    zIndex:999,
+                    backgroundColor:COLORS.transparentPrimray,
+                    borderTopWidth:3,
+                    borderColor:'#ffffff80'
+                }}
+            >
+                <FlatList
+                    data={properties}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={item => `${item.id}`}
+                    renderItem={({ item, index }) => (
+                        <VerticalCard
+                            containerStyle={{
+                                marginLeft: index == 0 ? SIZES.padding : 18,
+                                marginRight: index == properties.length - 1 ? SIZES.padding : 0,
+                                padding: 18,
+                                marginVertical:SIZES.padding,
+                                ...BOXSHADOW,
+                            }}
+                            imageStyle={{
+                                // marginTop: 35,
+                                margin: 10,
+                                borderRadius:SIZES.radius,
+                                height: 150,
+                                width: 150,
+                                alignItems: "center",
+                                justifyContent: "center"
+                            }}
+                            item={item}
+                            onPress={() => navigation.navigate( "PropertyDetail", { item: item } ) }
+                        />
+                    )}
+                />
+            </View>
 
-                </MapView>
-        </Animated.View>
+            <MapView
+                mapType="standard" // hybrid
+                // region={region}
+                initialRegion={region}
+                provider={PROVIDER_GOOGLE}
+                // customMapStyle={mapStyle}
+                showsUserLocation={true}
+                zoomEnabled={true}
+                showsCompass={true}
+                showsScale={true}
+                // cacheEnabled={true}
+                // loadingEnabled={true}
+                // onRegionChange={onRegionChangeHandler}
+                style={{
+                    width: Dimensions.get("window").width,
+                    height: Dimensions.get("window").height,
+                }}
+            >
+                {properties &&
+                    properties.map(marker => (
+                        <Marker
+                            key={`Marker-${marker.id}`}
+                            coordinate={{latitude:parseFloat(marker?.latitude),longitude:parseFloat(marker?.longitude)}}
+                            title={marker.title}
+                            description={marker?.address}
+                        >
+                            <Image source={icons.locationPin} style={{height: 35, width:35, tintColor:COLORS.primary }} />
+                        </Marker>
+                    ))
+                    
+                }
+
+            </MapView>
+
+        </View>
     )
 }
 

@@ -13,3 +13,5 @@ constants/
 
 # macOS
 .DS_Store
+
+.env

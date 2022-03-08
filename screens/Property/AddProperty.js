@@ -1,10 +1,13 @@
 import React from 'react';
-import { Text, View, StyleSheet, FlatList } from 'react-native';
+import { Text, View, StyleSheet, FlatList, Image, Alert } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useForm, Controller } from 'react-hook-form';
+// import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps'
 
 // Constants
 import { COLORS, FONTS, SIZES } from '../../constants/theme';
+import constants from '../../constants/constants';
+import icons from '../../constants/icons';
 
 // Component
 import TextInputComponent from '../../components/TextInputComponent'
@@ -17,14 +20,13 @@ import DatePickerComponent from '../../components/DatePickerComponent';
 // Redux
 import { useDispatch, useSelector } from 'react-redux';
 import { insertNewProperty } from '../../store/property/propertyActions';
-import constants from '../../constants/constants';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import GooglePlacesInput from '../../components/GoogleAutoCompleteInput';
 
 const AddProperty = ({ navigation, route }) => {
     
-    const flatListRef = React.useRef(null)
-
     const dispatch = useDispatch()
+    const [userId, setUserId] = React.useState(null);
     const [token, setToken] = React.useState('')
     const [isLoading, setIsLoading] = React.useState(false)
     const [propertyStatus, setPropertyStatus] = React.useState([])
@@ -34,15 +36,25 @@ const AddProperty = ({ navigation, route }) => {
     const [features, setFeatures] = React.useState([])
     const [typeOrActionCat, setTypeOrActionCat] = React.useState([])
     const [categories, setCategories] = React.useState([])
-    const [isSwitchOn, setIsSwitchOn] = React.useState(false);
 
     const [requestStatus, setRequestStatus] = React.useState({
         success:false,
         fail:false,
         msg:''
     });
-    // const [isRequestFail, setIsRequestFail] = React.useState(false);
 
+    const user_Id = useSelector( state => state.userReducer?.userId )
+
+    React.useEffect(() => {
+        if(user_Id){
+            // console.log((user_Id))
+            setUserId(user_Id)
+        }
+        (async () => {
+            const userId = await AsyncStorage.getItem('userId')
+            console.log("user ID ->>", userId)
+        })()
+    },[])
 
     const { register, setValue, handleSubmit, control, reset, formState: { errors, isValid } } = useForm({
         defaultValues: {
@@ -53,7 +65,6 @@ const AddProperty = ({ navigation, route }) => {
           action_category: '',
           listedIn: '',
           propertyStatus: '',
-        //   features: [],
           address: '',
           county_state: '',
           country: '',
@@ -79,13 +90,10 @@ const AddProperty = ({ navigation, route }) => {
           yearTax:'',
           garden:'',
           date:'',
-        //   customVideo:false,
           availability:'',
           basement:'',
           extConstruction:'',
           roofing:'',
-          latitude: '',
-          longitude: '',
           use_floor_plans:'',
           attic:'',
           "gas-heat":'',
@@ -123,7 +131,6 @@ const AddProperty = ({ navigation, route }) => {
         mode: 'onBlur'
     });
 
-    // const selectedToken = useSelector( state => state.userReducer.tempToken )
     const selectedToken = useSelector( state => state.userReducer.token )
     const selectedStatus = useSelector( state => state.propertyReducer?.allTax?.status )
     const selectedCity = useSelector( state => state.propertyReducer?.allTax?.city )
@@ -134,10 +141,7 @@ const AddProperty = ({ navigation, route }) => {
     const selectedTypes = useSelector( state => state.propertyReducer?.allTax?.action_cat )
 
     React.useEffect(() => {
-        if(selectedToken){
-            // console.log((selectedToken))
-            setToken(selectedToken)
-        }
+        if(selectedToken) setToken(selectedToken)
     }, [selectedToken])
     
     React.useEffect(() => {
@@ -190,6 +194,26 @@ const AddProperty = ({ navigation, route }) => {
 
     // Submit Handler
     const onSubmit = data => {
+        // console.log(userId)
+        if(!userId) {
+            Alert.alert(
+                "Warning!",
+                "To add property in your listing, you need to be a registered user and should login before proceeding. Thank you!",
+                [
+                    {
+                        text: "Login",
+                        onPress: () => navigation.navigate("Auth"),
+                        // style: "Ok"
+                    },
+                    {
+                        text: "Cancel",
+                        onPress: () => console.log("Cancel Pressed"),
+                        style: "cancel"
+                    }
+                ]
+            );
+            return;
+        }
         setIsLoading(true)
         setRequestStatus({
             success:false,
@@ -197,6 +221,7 @@ const AddProperty = ({ navigation, route }) => {
             msg:''
         })
         if(data) {
+            data.author_id = userId
             dispatch( insertNewProperty( data, token, setIsLoading, setRequestStatus ) )
         }
     };
@@ -285,15 +310,24 @@ const AddProperty = ({ navigation, route }) => {
                 />
                 {/* MEDIA EDNS */}
 
-                <Text style={styles.header}>Listing Location</Text>
                 {/* ADDRESS */}
-                <TextInputComponent
-                    name="address"
-                    placeholder="Property address"
-                    isRequired={true}
+                <Text style={{...styles.header, marginBottom:10}}>Select your address</Text>
+                <Controller
                     control={control}
-                    errors={errors}
-                    errorMsg="Address is required" />
+                    render={({field: { onChange, onBlur, value }}) => ( 
+                        <GooglePlacesInput  onChange={onChange} onBlur={onBlur} />
+                    )}
+                    name="address"
+                    rules={{ required: { value: true, message: "Address is required" } }}
+                />
+                {errors.address && <Text style={{
+                    color:'red',
+                    marginTop:4,
+                    letterSpacing:0.5,
+                    ...FONTS.body5
+                    }}
+                >{errors.address.message}</Text>}
+                
                 {/* COUNTY */}
                 <PickerComponent
                     name="county_state"
@@ -313,22 +347,17 @@ const AddProperty = ({ navigation, route }) => {
                     optionList={area}
                     control={control} />
                 {/* ZIP */}
+                <Text style={styles.label}>Postal/Zip Code</Text>
                 <TextInputComponent
                     name="zip"
-                    placeholder="Zip code"
+                    placeholder="Postal/Zip code"
                     isRequired={false}
                     control={control}
                     errors={errors}
-                    errorMsg="" />
-                {/* COUNTRY */}
-                <TextInputComponent
-                    name="country"
-                    placeholder="Country"
-                    isRequired={false}
-                    control={control}
-                    errors={errors}
-                    errorMsg="" />
-                    
+                    errorMsg=""
+                />
+
+                {/* ********************************** */}
                 {/* PRICE */}
                 <Text style={styles.header}>Price Details</Text>
                 {/* PRICE */}
@@ -447,7 +476,7 @@ const AddProperty = ({ navigation, route }) => {
 
                 {/* Featured */}
                 <Text style={styles.header}>Featured Property</Text>
-                <SwitchButtonComponent name="featured" label="Featured Property Setup" control={control} customLabelCss={{textTransform:"capitalize"}} />
+                <SwitchButtonComponent name="featured" label="Featured Property Setup" control={control} customLabelCss={{textTransform:"capitalize"}} isFeatured={true} />
 
                 {/* AMENTIES AND FEATURES */}
                 <Text style={styles.header}>Amenties and Features</Text>
@@ -468,21 +497,47 @@ const AddProperty = ({ navigation, route }) => {
                 }
 
                 {/* Submit Button */}
-                <TextButton
-                    label={isLoading ? "Processing..." : "Add To List"}
-                    disabled={isLoading}
-                    buttonContainerStyle={{
-                        backgroundColor: isLoading ? COLORS.transparentPrimray : COLORS.primary,
-                        marginVertical:SIZES.padding,
-                        height:55,
-                        borderRadius:SIZES.radius
-                    }}
-                    labelStyle={{
-                        color:COLORS.white,
-                        ...FONTS.body3
-                    }}
-                    onPress={handleSubmit(onSubmit)}
-                />
+                {
+                    userId == null
+                    ?
+                    <View
+                        style={{flex:1}}
+                    >
+                        <TextButton
+                            label={"Add To List"}
+                            disabled={true}
+                            buttonContainerStyle={{
+                                backgroundColor: COLORS.transparentPrimray,
+                                marginVertical:SIZES.padding,
+                                height:55,
+                                borderRadius:SIZES.radius
+                            }}
+                            labelStyle={{
+                                color:COLORS.white,
+                                ...FONTS.body3
+                            }}
+                            onPress={() => {}}
+                        />
+                        <Text style={{textAlign:"center",...FONTS.body3,color:COLORS.lightOrange}}>Please! sign in before trying submitting anything.</Text>
+                    </View>
+                    :
+                    <TextButton
+                        label={isLoading ? "Processing..." : "Add To List!"}
+                        disabled={isLoading}
+                        buttonContainerStyle={{
+                            backgroundColor: isLoading ? COLORS.transparentPrimray : COLORS.primary,
+                            marginVertical:SIZES.padding,
+                            height:55,
+                            borderRadius:SIZES.radius
+                        }}
+                        labelStyle={{
+                            color:COLORS.white,
+                            ...FONTS.body3
+                        }}
+                        onPress={handleSubmit(onSubmit)}
+                    />
+                }
+
                 <View style={{
                     height:400}}>
 

@@ -4,9 +4,9 @@
     "slug": "ahuse-rn-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/Ahuse_logo-1024x1024.png",
+    "icon": "./assets/images/Ahuse_splash.png",
     "splash": {
-      "image": "./assets/images/Ahuse_logo-1024x1024.png",
+      "image": "./assets/images/Ahuse_splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ff0"
     },
@@ -21,12 +21,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/Ahuse_logo-1024x1024.png",
+        "foregroundImage": "./assets/images/Ahuse_splash.png",
         "backgroundColor": "#ff0"
       }
     },
     "web": {
-      "favicon": "./assets/images/Ahuse_logo-1024x1024.png"
+      "favicon": "./assets/images/Ahuse_splash.png"
     },
     "plugins": [
       [

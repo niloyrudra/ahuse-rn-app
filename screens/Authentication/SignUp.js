@@ -22,7 +22,7 @@ import TextIconButton from '../../components/TextIconButton';
 
 // Redux
 import { useDispatch, useSelector } from 'react-redux';
-import { userSignUpAction } from '../../store/user/userActions';
+import { userSignUpAction, getTempToken } from '../../store/user/userActions';
 
 const SignUp = ({ navigation, route }) => {
 
@@ -51,6 +51,10 @@ const SignUp = ({ navigation, route }) => {
     const selectIsLoading = useSelector( (state) => state.userReducer.isLoading )
 
     React.useEffect(() => {
+        dispatch( getTempToken() )
+    }, []);
+
+    React.useEffect(() => {
         if(selectLoggedInUser)
         {
             setIsLoading(true)
@@ -63,7 +67,7 @@ const SignUp = ({ navigation, route }) => {
     React.useEffect(() => {
         if(tempToken){
             setToken(tempToken)
-            console.log(tempToken)
+            // console.log(tempToken)
         }
     }, [tempToken])
 
@@ -88,7 +92,7 @@ const SignUp = ({ navigation, route }) => {
             password: password,
             tempToken: tempToken
         };
-        console.log(userData)
+        // console.log(userData)
         dispatch( userSignUpAction( userData, setIsLoading, setRequestStatus ) )
     };
 

@@ -14,7 +14,7 @@ import icons from '../../constants/icons';
 import { COLORS ,FONTS ,SIZES } from '../../constants/theme'
 import TextButton from '../../components/TextButton';
 
-const FilterModal = ({ data, isVisible, catList, typeList, areaList, onClose, onGenerateSearchData, onShowSearchModal }) => {
+const FilterModal = ({ data, refEle, isVisible, catList, typeList, areaList, onClose, onGenerateSearchData, onShowSearchModal=null }) => {
     const modelAnimatedValue = React.useRef( new Animated.Value(0) ).current
 
     const [ areas, setAreas ] = React.useState([])
@@ -395,13 +395,14 @@ const FilterModal = ({ data, isVisible, catList, typeList, areaList, onClose, on
                                 backgroundColor: COLORS.primary
                             }}
                             onPress={() => {
+                                refEle.current = ''
                                 if(data)
                                 {
                                     let propertyData = data.filter( item => item.cat_ids.includes( selectedCatId ) && item.cad_ids.includes( selectedTypeId ) && item.area_ids.includes( selectedAreaId ) && item.price >= price )
 
                                     console.log(propertyData.length)
                                     onGenerateSearchData(propertyData)
-                                    onShowSearchModal()
+                                    if(onShowSearchModal) onShowSearchModal()
                                 }
                                 setShowFilterModal(false)
                             }}

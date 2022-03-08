@@ -10,7 +10,7 @@ const RecommendedSection = ({navigation, data}) => {
     return (
         <Section
             title="Recommended"
-            onPress={() => console.log("Show all recommended properties")}
+            onPress={() => navigation.navigate("MapScreen", {items:data})}
         >
             <FlatList
                 data={data}
